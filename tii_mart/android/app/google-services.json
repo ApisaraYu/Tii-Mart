@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "571394876765",
+    "project_id": "tii-mart",
+    "storage_bucket": "tii-mart.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:571394876765:android:ed5437166a9808667a34b4",
+        "android_client_info": {
+          "package_name": "com.example.tii_mart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2F7OnrTWz-qSQoOt3O-E1sQwG3Q72zM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
