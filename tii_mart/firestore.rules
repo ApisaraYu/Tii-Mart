@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // โปรไฟล์ผู้ใช้: อ่าน/แก้ได้เฉพาะของตัวเอง
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+
+      // ตอนสมัคร: role ต้องเป็น customer หรือ seller เท่านั้น
+      allow create: if signedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.role in ['customer', 'seller'];
+
+      // แก้โปรไฟล์ได้ แต่ห้ามเปลี่ยน role เอง
+      allow update: if signedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.role == resource.data.role;
+
+      allow delete: if false;
+    }
+
+    // collection อื่นๆ (products, orders ...) ยังไม่เปิดสิทธิ์ — เพิ่มทีหลังเมื่อทำฟีเจอร์นั้น
+  }
+}
