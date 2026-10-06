@@ -8,6 +8,7 @@ import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/state/auth_providers.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/seller/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/seller/product_management/presentation/pages/product_form_page.dart';
 import '../../features/seller/product_management/presentation/pages/product_list_page.dart';
@@ -51,6 +52,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
       GoRoute(path: '/signup', builder: (_, __) => const SignUpPage()),
       GoRoute(path: '/', builder: (_, __) => const HomePage()),
+      GoRoute(
+        path: '/product/:id',
+        builder: (_, state) =>
+            ProductDetailPage(productId: state.pathParameters['id']!),
+      ),
       GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),
       GoRoute(
         path: '/seller',

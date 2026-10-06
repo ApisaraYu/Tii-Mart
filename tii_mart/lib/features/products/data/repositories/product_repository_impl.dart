@@ -12,6 +12,9 @@ class ProductRepositoryImpl implements ProductRepository {
       _remote.watchByOwner(ownerId);
 
   @override
+  Stream<List<Product>> watchActiveProducts() => _remote.watchActive();
+
+  @override
   Future<Product> getProduct(String id) => _remote.get(id);
 
   @override

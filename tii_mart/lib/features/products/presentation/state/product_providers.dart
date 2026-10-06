@@ -27,3 +27,8 @@ final sellerProductsProvider = StreamProvider<List<Product>>((ref) {
   if (uid == null) return Stream<List<Product>>.value(const []);
   return WatchSellerProducts(ref.watch(productRepositoryProvider))(uid);
 });
+
+/// สินค้าที่เปิดขายทั้งหมด สำหรับหน้าลูกค้า (อัพเดตสด)
+final activeProductsProvider = StreamProvider<List<Product>>((ref) {
+  return WatchActiveProducts(ref.watch(productRepositoryProvider))();
+});

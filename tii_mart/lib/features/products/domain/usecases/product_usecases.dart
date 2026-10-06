@@ -29,3 +29,10 @@ class DeleteProduct {
 
   Future<void> call(String id) => _repo.deleteProduct(id);
 }
+
+class WatchActiveProducts {
+  const WatchActiveProducts(this._repo);
+  final ProductRepository _repo;
+
+  Stream<List<Product>> call() => _repo.watchActiveProducts();
+}

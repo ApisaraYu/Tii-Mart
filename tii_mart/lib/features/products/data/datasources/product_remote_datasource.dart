@@ -41,6 +41,30 @@ class ProductRemoteDataSource {
         );
   }
 
+  /// สินค้าที่เปิดขาย (isActive == true) — กรองหมวดหมู่/ค้นหาฝั่งแอพเพื่อเลี่ยง index
+  /// จำกัด 200 รายการแรก (พอสำหรับโปรเจกต์นี้; ถ้าสินค้าเยอะมากค่อยทำแบ่งหน้า)
+  Stream<List<Product>> watchActive() {
+    return _products
+        .where('isActive', isEqualTo: true)
+        .limit(200)
+        .snapshots()
+        .map((snap) {
+          final list = snap.docs.map((d) => ProductModel.fromDoc(d)).toList();
+          final now = DateTime.now();
+          list.sort(
+            (a, b) => (b.createdAt ?? now).compareTo(a.createdAt ?? now),
+          );
+          return list;
+        })
+        .transform(
+          StreamTransformer<List<Product>, List<Product>>.fromHandlers(
+            handleError: (error, stackTrace, sink) {
+              sink.addError(toFailure(error), stackTrace);
+            },
+          ),
+        );
+  }
+
   Future<Product> get(String id) {
     return guardFirebase(() async {
       final ref = _products.doc(id);

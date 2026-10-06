@@ -5,6 +5,9 @@ abstract class ProductRepository {
   /// สินค้าทั้งหมดของเจ้าของร้านคนนี้ (อัพเดตสด, ใหม่สุดก่อน; ยังไม่โหลด variants)
   Stream<List<Product>> watchProductsByOwner(String ownerId);
 
+  /// สินค้าที่เปิดขายทั้งหมด สำหรับหน้าลูกค้า (อัพเดตสด, ใหม่สุดก่อน; ยังไม่โหลด variants)
+  Stream<List<Product>> watchActiveProducts();
+
   /// สินค้า 1 ชิ้นพร้อมตัวเลือกย่อยครบ
   Future<Product> getProduct(String id);
 
