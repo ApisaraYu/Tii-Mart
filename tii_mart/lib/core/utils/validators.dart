@@ -29,4 +29,20 @@ class Validators {
     if (empty != null) return empty;
     return value!.trim().length < 3 ? 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : null;
   }
+
+  /// ราคา: จำนวนเต็มมากกว่า 0
+  static String? price(String? value) {
+    final empty = required(value, 'ราคา');
+    if (empty != null) return empty;
+    final n = int.tryParse(value!.trim());
+    return (n == null || n <= 0) ? 'ราคาต้องมากกว่า 0' : null;
+  }
+
+  /// สต๊อก: จำนวนเต็ม 0 ขึ้นไป
+  static String? stock(String? value) {
+    final empty = required(value, 'จำนวนสต๊อก');
+    if (empty != null) return empty;
+    final n = int.tryParse(value!.trim());
+    return (n == null || n < 0) ? 'จำนวนต้องเป็นตัวเลข 0 ขึ้นไป' : null;
+  }
 }

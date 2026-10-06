@@ -34,7 +34,13 @@ class DashboardPage extends ConsumerWidget {
             const SizedBox(height: 8),
             const Text('Dashboard ร้านค้า (รอใส่ยอดขาย/ออเดอร์/สินค้า)'),
             const SizedBox(height: 24),
-            ElevatedButton(
+            ElevatedButton.icon(
+              onPressed: () => context.push('/seller/products'),
+              icon: const Icon(Icons.inventory_2_outlined),
+              label: const Text('จัดการสินค้า'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
               onPressed: () => context.go('/'),
               child: const Text('สลับไปโหมดลูกค้า'),
             ),

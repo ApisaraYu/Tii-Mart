@@ -9,6 +9,8 @@ import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/state/auth_providers.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/seller/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/seller/product_management/presentation/pages/product_form_page.dart';
+import '../../features/seller/product_management/presentation/pages/product_list_page.dart';
 
 /// เส้นทางหน้าจอ + ตัวป้องกันตามบทบาท (role)
 ///  - ยังไม่ล็อกอิน        → เข้าได้เฉพาะ /login และ /signup
@@ -50,7 +52,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/signup', builder: (_, __) => const SignUpPage()),
       GoRoute(path: '/', builder: (_, __) => const HomePage()),
       GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),
-      GoRoute(path: '/seller', builder: (_, __) => const DashboardPage()),
+      GoRoute(
+        path: '/seller',
+        builder: (_, __) => const DashboardPage(),
+        routes: [
+          GoRoute(
+            path: 'products',
+            builder: (_, __) => const ProductListPage(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (_, __) => const ProductFormPage(),
+              ),
+              GoRoute(
+                path: ':id/edit',
+                builder: (_, state) =>
+                    ProductFormPage(productId: state.pathParameters['id']),
+              ),
+            ],
+          ),
+        ],
+      ),
     ],
   );
 });
