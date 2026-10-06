@@ -50,6 +50,34 @@ service cloud.firestore {
       }
     }
 
-    // collection อื่นๆ (orders ...) ยังไม่เปิดสิทธิ์ — เพิ่มทีหลังเมื่อทำฟีเจอร์นั้น
+    // โค้ดส่วนลด: ผู้ใช้ที่ล็อกอินอ่านได้ (ลูกค้าใช้ตอนชำระเงิน) / สร้าง-แก้-ลบได้เฉพาะเจ้าของร้าน
+    match /coupons/{couponId} {
+      allow read: if signedIn();
+      allow create: if isSeller()
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow update: if signedIn()
+                    && resource.data.ownerId == request.auth.uid
+                    && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if signedIn()
+                    && resource.data.ownerId == request.auth.uid;
+    }
+
+    // คำสั่งซื้อ: เห็นได้เฉพาะร้านและลูกค้าของออเดอร์นั้น
+    match /orders/{orderId} {
+      allow read: if signedIn()
+                  && (resource.data.sellerId == request.auth.uid
+                      || resource.data.customerId == request.auth.uid);
+      // ลูกค้าสร้างออเดอร์ของตัวเอง (ภายหลังควรตรวจราคา/ยอดรวมเพิ่มเติม)
+      allow create: if signedIn()
+                    && request.resource.data.customerId == request.auth.uid;
+      // ร้านค้าแก้ได้เฉพาะสถานะ
+      allow update: if signedIn()
+                    && resource.data.sellerId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // collection อื่นๆ (carts ...) ยังไม่เปิดสิทธิ์ — เพิ่มทีหลังเมื่อทำฟีเจอร์นั้น
   }
 }
