@@ -1,0 +1,81 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../../../core/errors/error_mapper.dart';
+import '../../domain/entities/shop_order.dart';
+
+/// collection: orders
+/// { sellerId, customerId, customerName, items: [{productId,name,variantLabel,price,qty,imageUrl}],
+///   total, status, createdAt, updatedAt }
+class OrderRemoteDataSource {
+  OrderRemoteDataSource(this._db);
+
+  final FirebaseFirestore _db;
+  static const _timeout = Duration(seconds: 20);
+
+  CollectionReference<Map<String, dynamic>> get _orders =>
+      _db.collection('orders');
+
+  /// ไม่ใช้ orderBy เพื่อเลี่ยง composite index — เรียงฝั่งแอพแทน
+  Stream<List<ShopOrder>> watchBySeller(String sellerId) {
+    return _orders
+        .where('sellerId', isEqualTo: sellerId)
+        .snapshots()
+        .map((snap) {
+          final list = snap.docs.map(_fromDoc).toList();
+          final now = DateTime.now();
+          list.sort(
+            (a, b) => (b.createdAt ?? now).compareTo(a.createdAt ?? now),
+          );
+          return list;
+        })
+        .transform(
+          StreamTransformer<List<ShopOrder>, List<ShopOrder>>.fromHandlers(
+            handleError: (error, stackTrace, sink) {
+              sink.addError(toFailure(error), stackTrace);
+            },
+          ),
+        );
+  }
+
+  Future<void> updateStatus(String orderId, OrderStatus status) {
+    return guardFirebase(() async {
+      await _orders.doc(orderId).update({
+        'status': status.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }).timeout(_timeout);
+    });
+  }
+
+  static String _s(Object? v) => v is String ? v : '';
+  static int _i(Object? v) => v is num ? v.toInt() : 0;
+
+  static ShopOrder _fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final d = doc.data() ?? <String, dynamic>{};
+    final raw = d['items'];
+    final items = <OrderItem>[
+      if (raw is List)
+        for (final m in raw.whereType<Map>())
+          OrderItem(
+            productId: _s(m['productId']),
+            name: _s(m['name']),
+            variantLabel: _s(m['variantLabel']),
+            price: _i(m['price']),
+            qty: _i(m['qty']),
+            imageUrl: _s(m['imageUrl']),
+          ),
+    ];
+    final ts = d['createdAt'];
+    return ShopOrder(
+      id: doc.id,
+      sellerId: _s(d['sellerId']),
+      customerId: _s(d['customerId']),
+      customerName: _s(d['customerName']),
+      items: items,
+      total: _i(d['total']),
+      status: OrderStatus.fromString(_s(d['status'])),
+      createdAt: ts is Timestamp ? ts.toDate() : null,
+    );
+  }
+}

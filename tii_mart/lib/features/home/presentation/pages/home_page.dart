@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme/app_theme.dart';
 import '../../../../core/constants/product_options.dart';
 import '../../../../core/errors/failure.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../auth/presentation/state/auth_providers.dart';
 import '../../../products/domain/entities/product.dart';
 import '../../../products/presentation/state/product_providers.dart';
+import '../widgets/customer_bottom_nav.dart';
 import '../widgets/product_card.dart';
 
-/// หน้าแรกฝั่งลูกค้า: ค้นหา + หมวดหมู่ + รายการสินค้า
+/// หน้าแรกฝั่งลูกค้า ตาม wireframe (main page):
+/// โลโก้ → แบนเนอร์ → ปุ่มหมวดหมู่ + ช่องค้นหา → รายการสินค้า → bottom navbar
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -40,6 +44,32 @@ class _HomePageState extends ConsumerState<HomePage> {
     }).toList();
   }
 
+  Future<void> _pickCategory() async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(
+              title: const Text('ทั้งหมด'),
+              trailing: _category == null ? const Icon(Icons.check) : null,
+              onTap: () => Navigator.pop(ctx, ''),
+            ),
+            for (final c in productCategories)
+              ListTile(
+                title: Text(c),
+                trailing: _category == c ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(ctx, c),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (result == null) return; // ปิดเมนูโดยไม่เลือก
+    setState(() => _category = result.isEmpty ? null : result);
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -47,119 +77,171 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TiiMart'),
+        title: const AppLogo(),
         actions: [
           if (user != null && user.isSeller)
             IconButton(
               tooltip: 'จัดการร้านค้า',
-              icon: const Icon(Icons.storefront),
+              icon: const Icon(Icons.store_mall_directory_outlined),
               onPressed: () => context.go('/seller'),
             ),
-          IconButton(
-            tooltip: 'โปรไฟล์',
-            icon: const Icon(Icons.person),
-            onPressed: () => context.push('/profile'),
-          ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              textInputAction: TextInputAction.search,
-              onChanged: (v) => setState(() => _query = v),
-              decoration: InputDecoration(
-                hintText: 'ค้นหาสินค้า เช่น โน้ตบุ๊ก, คีย์บอร์ด',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _query.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _query = '');
-                        },
+      bottomNavigationBar: const CustomerBottomNav(index: 0),
+      body: CustomScrollView(
+        slivers: [
+          const SliverToBoxAdapter(child: _Banner()),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 150),
+                    child: OutlinedButton.icon(
+                      onPressed: _pickCategory,
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 52),
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+                      icon: const Icon(Icons.tune, size: 20),
+                      label: Text(
+                        _category ?? 'หมวดหมู่',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      textInputAction: TextInputAction.search,
+                      onChanged: (v) => setState(() => _query = v),
+                      decoration: InputDecoration(
+                        hintText: 'ค้นหาสินค้า',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _query.isEmpty
+                            ? null
+                            : IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _query = '');
+                                },
+                              ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ...products.when<List<Widget>>(
+            loading: () => [
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ],
+            error: (e, _) => [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _Message(
+                  icon: Icons.error_outline,
+                  text: errorMessage(e),
+                  actionLabel: 'ลองใหม่',
+                  onAction: () => ref.invalidate(activeProductsProvider),
                 ),
               ),
-            ),
-          ),
-          SizedBox(
-            height: 48,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: [
-                _chip('ทั้งหมด', _category == null, () {
-                  setState(() => _category = null);
-                }),
-                for (final c in productCategories)
-                  _chip(c, _category == c, () => setState(() => _category = c)),
-              ],
-            ),
-          ),
-          Expanded(
-            child: products.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => _Message(
-                icon: Icons.error_outline,
-                text: errorMessage(e),
-                actionLabel: 'ลองใหม่',
-                onAction: () => ref.invalidate(activeProductsProvider),
-              ),
-              data: (all) {
-                final list = _filter(all);
-                if (all.isEmpty) {
-                  return const _Message(
-                    icon: Icons.inventory_2_outlined,
-                    text: 'ยังไม่มีสินค้าในร้าน',
-                  );
-                }
-                if (list.isEmpty) {
-                  return const _Message(
-                    icon: Icons.search_off,
-                    text: 'ไม่พบสินค้าที่ค้นหา',
-                  );
-                }
-                return GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 220,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.58,
+            ],
+            data: (all) {
+              final list = _filter(all);
+              if (all.isEmpty || list.isEmpty) {
+                return [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _Message(
+                      icon: all.isEmpty
+                          ? Icons.inventory_2_outlined
+                          : Icons.search_off,
+                      text: all.isEmpty
+                          ? 'ยังไม่มีสินค้าในร้าน'
+                          : 'ไม่พบสินค้าที่ค้นหา',
+                    ),
                   ),
-                  itemCount: list.length,
-                  itemBuilder: (_, i) {
-                    final p = list[i];
-                    return ProductCard(
-                      product: p,
-                      onTap: () => context.push('/product/${p.id}'),
-                    );
-                  },
-                );
-              },
-            ),
+                ];
+              }
+              return [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  sliver: SliverList.builder(
+                    itemCount: list.length,
+                    itemBuilder: (_, i) {
+                      final p = list[i];
+                      return ProductCard(
+                        product: p,
+                        onTap: () => context.push('/product/${p.id}'),
+                      );
+                    },
+                  ),
+                ),
+              ];
+            },
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _chip(String label, bool selected, VoidCallback onTap) {
+/// แบนเนอร์ (ยังเป็นข้อความบนพื้นไล่สี — ภายหลังเปลี่ยนเป็นรูปโปรโมชันได้)
+class _Banner extends StatelessWidget {
+  const _Banner();
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) => onTap(),
+      padding: const EdgeInsets.all(16),
+      child: Container(
+        height: 140,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: const LinearGradient(
+            colors: [AppColors.navbar, AppColors.primary],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'อุปกรณ์ไอที ใช้กับเครื่องคุณได้ไหม?',
+              style: AppTheme.heading(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'ดูสเปกและความเข้ากันได้ Windows / Mac ก่อนซื้อ',
+              style: AppTheme.body(fontSize: 15, color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/format.dart';
 import '../../../products/domain/entities/product.dart';
 
-/// การ์ดสินค้าในหน้า Home (รูป ชื่อ ยี่ห้อ ราคาเริ่มต้น)
+/// แถวสินค้าในหน้า Home ตาม wireframe: รูปซ้าย / ชื่อ + คำอธิบาย + ราคา ขวา
+/// (เป็นแถวความสูงยืดตามเนื้อหา จึงไม่เกิด bottom overflow เหมือนแบบกริด)
 class ProductCard extends StatelessWidget {
   const ProductCard({super.key, required this.product, required this.onTap});
 
@@ -14,25 +15,30 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final soldOut = product.totalStock <= 0;
     final textTheme = Theme.of(context).textTheme;
+    final subtitle = product.description.isNotEmpty
+        ? product.description
+        : [if (product.brand.isNotEmpty) product.brand, product.category]
+            .join(' • ');
 
     return Card(
       color: Colors.white,
       clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
+      margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 1,
+            SizedBox(
+              width: 112,
+              height: 112,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   if (product.images.isEmpty)
                     const ColoredBox(
                       color: Color(0xFFEAEAEA),
-                      child: Icon(Icons.image_outlined, size: 40),
+                      child: Icon(Icons.image_outlined, size: 36),
                     )
                   else
                     Image.network(
@@ -40,7 +46,7 @@ class ProductCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const ColoredBox(
                         color: Color(0xFFEAEAEA),
-                        child: Icon(Icons.broken_image_outlined, size: 40),
+                        child: Icon(Icons.broken_image_outlined, size: 36),
                       ),
                     ),
                   if (soldOut)
@@ -59,33 +65,34 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleSmall,
-                  ),
-                  if (product.brand.isNotEmpty)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      product.brand,
-                      maxLines: 1,
+                      product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: textTheme.bodySmall,
                     ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '฿${formatBaht(product.minPrice)}',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 8),
+                    Text(
+                      '฿${formatBaht(product.minPrice)}',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
