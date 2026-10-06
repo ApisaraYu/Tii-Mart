@@ -23,6 +23,33 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // collection อื่นๆ (products, orders ...) ยังไม่เปิดสิทธิ์ — เพิ่มทีหลังเมื่อทำฟีเจอร์นั้น
+    function isSeller() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'seller';
+    }
+
+    // สินค้า: ใครก็อ่านได้ / สร้างได้เฉพาะเจ้าของร้าน / แก้-ลบได้เฉพาะเจ้าของสินค้านั้น
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isSeller()
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow update: if signedIn()
+                    && resource.data.ownerId == request.auth.uid
+                    && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if signedIn()
+                    && resource.data.ownerId == request.auth.uid;
+
+      // ตัวเลือกย่อย (สี/ขนาด/ราคา/สต๊อก)
+      match /variants/{variantId} {
+        allow read: if true;
+        // getAfter = ดูเอกสารแม่หลัง batch เสร็จ (สร้างสินค้า+variant ใน batch เดียวกันได้)
+        allow create, update: if signedIn()
+          && getAfter(/databases/$(database)/documents/products/$(productId)).data.ownerId == request.auth.uid;
+        allow delete: if signedIn()
+          && get(/databases/$(database)/documents/products/$(productId)).data.ownerId == request.auth.uid;
+      }
+    }
+
+    // collection อื่นๆ (orders ...) ยังไม่เปิดสิทธิ์ — เพิ่มทีหลังเมื่อทำฟีเจอร์นั้น
   }
 }
