@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/format.dart';
 import '../../../../core/widgets/app_logo.dart';
+import '../../../auth/presentation/state/auth_providers.dart';
 import '../../../home/presentation/widgets/customer_bottom_nav.dart';
 import '../../domain/entities/product.dart';
 import '../state/product_providers.dart';
@@ -71,16 +72,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   }
 }
 
-class _DetailView extends StatefulWidget {
+class _DetailView extends ConsumerStatefulWidget {
   const _DetailView({required this.product});
 
   final Product product;
 
   @override
-  State<_DetailView> createState() => _DetailViewState();
+  ConsumerState<_DetailView> createState() => _DetailViewState();
 }
 
-class _DetailViewState extends State<_DetailView> {
+class _DetailViewState extends ConsumerState<_DetailView> {
   final _pageController = PageController();
   int _imageIndex = 0;
   int _variantIndex = 0;
@@ -150,6 +151,11 @@ class _DetailViewState extends State<_DetailView> {
       return;
     }
     setState(() => _qty = next);
+  }
+
+  /// ผู้เยี่ยมชม: พาไปเข้าสู่ระบบ แล้วกลับมาที่หน้าสินค้านี้
+  void _goLogin() {
+    context.push('/login?from=${Uri.encodeComponent('/product/${p.id}')}');
   }
 
   void _addToCart() {
@@ -283,10 +289,14 @@ class _DetailViewState extends State<_DetailView> {
     final textTheme = Theme.of(context).textTheme;
     final primary = Theme.of(context).colorScheme.primary;
     final soldOut = _stock <= 0;
+    final loggedIn = ref.watch(currentUserProvider) != null;
 
     return Scaffold(
       appBar: AppBar(
-        // ปุ่ม back ซ้ายมาเอง / โลโก้ขวา ตาม wireframe
+        // ปุ่ม back ซ้าย (ถ้าเปิดมาตรงๆ ไม่มีหน้าก่อนหน้า ให้กลับหน้าแรก) / โลโก้ขวา ตาม wireframe
+        leading: BackButton(
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
         actions: const [
           Padding(padding: EdgeInsets.only(right: 16), child: AppLogo()),
         ],
@@ -300,8 +310,14 @@ class _DetailViewState extends State<_DetailView> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: _addToCart,
-                child: Text(soldOut ? 'สินค้าหมด' : 'เพิ่มสินค้าเข้ารถเข็น'),
+                onPressed: loggedIn ? _addToCart : _goLogin,
+                child: Text(
+                  !loggedIn
+                      ? 'เข้าสู่ระบบเพื่อเพิ่มเข้ารถเข็น'
+                      : soldOut
+                          ? 'สินค้าหมด'
+                          : 'เพิ่มสินค้าเข้ารถเข็น',
+                ),
               ),
             ),
           ),

@@ -79,6 +79,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       appBar: AppBar(
         title: const AppLogo(),
         actions: [
+          if (user == null)
+            TextButton(
+              onPressed: () => context.push('/login'),
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
+              child: const Text('เข้าสู่ระบบ'),
+            ),
           if (user != null && user.isSeller)
             IconButton(
               tooltip: 'จัดการร้านค้า',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/validators.dart';
@@ -60,6 +61,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // ออกจากระบบแล้ว (ผู้ใช้เป็น null) → กลับหน้าแรกแบบผู้เยี่ยมชมทันที
+    ref.listen(currentUserProvider, (prev, next) {
+      if (next == null) context.go('/');
+    });
     ref.listen<AsyncValue<void>>(authControllerProvider, (prev, next) {
       if (next.hasError) {
         ScaffoldMessenger.of(context)

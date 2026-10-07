@@ -55,6 +55,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ล็อกอินสำเร็จ (มีผู้ใช้) → ไปหน้าตามบทบาททันที ไม่รอ router redirect
+    ref.listen(currentUserProvider, (prev, next) {
+      if (next == null) return;
+      final from = GoRouterState.of(context).uri.queryParameters['from'];
+      final backTo = (!next.isSeller &&
+              from != null &&
+              (from == '/' || from.startsWith('/product/')))
+          ? from
+          : null;
+      context.go(backTo ?? (next.isSeller ? '/seller' : '/'));
+    });
     ref.listen<AsyncValue<void>>(authControllerProvider, (prev, next) {
       if (next.hasError) {
         ScaffoldMessenger.of(context)
@@ -129,6 +140,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     TextButton(
                       onPressed: loading ? null : () => context.push('/signup'),
                       child: const Text('สร้างบัญชีผู้ใช้ใหม่'),
+                    ),
+                    TextButton(
+                      onPressed: loading ? null : () => context.go('/'),
+                      child: const Text('ดูสินค้าก่อน'),
                     ),
                   ],
                 ),

@@ -11,9 +11,33 @@ class Validators {
     return ok ? null : 'รูปแบบอีเมลไม่ถูกต้อง';
   }
 
+  /// ตอนล็อกอิน: ตรวจแค่ว่ากรอกแล้ว (ไม่ใช้กฎความแข็งแรง เพราะบัญชีเก่าอาจตั้งรหัสไว้ก่อนมีกฎนี้)
   static String? password(String? value) {
     if (value == null || value.isEmpty) return 'กรุณากรอกรหัสผ่าน';
-    if (value.length < 6) return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+    return null;
+  }
+
+  /// รหัสผ่านที่ใช้ตอนสมัคร/ตั้งใหม่: 8 ตัวขึ้นไป มีตัวอักษร A-Z และตัวเลข ไม่ใช่รหัสที่เดาง่าย
+  static String? newPassword(String? value) {
+    if (value == null || value.isEmpty) return 'กรุณากรอกรหัสผ่าน';
+    if (value.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+    if (!RegExp('[A-Za-z]').hasMatch(value)) {
+      return 'ต้องมีตัวอักษรภาษาอังกฤษอย่างน้อย 1 ตัว';
+    }
+    if (!RegExp('[0-9]').hasMatch(value)) {
+      return 'ต้องมีตัวเลขอย่างน้อย 1 ตัว';
+    }
+    if (RegExp(r'^(.)\1+$').hasMatch(value)) {
+      return 'รหัสผ่านต้องไม่ใช่ตัวอักษรเดียวซ้ำกัน';
+    }
+    const common = {
+      'password1', 'password123', 'qwerty123', 'abc12345', 'abcd1234',
+      'iloveyou1', 'admin1234', 'welcome1', 'letmein123', 'a1234567',
+      'a12345678', 'asdf1234', 'qwer1234', 'q1w2e3r4',
+    };
+    if (common.contains(value.toLowerCase())) {
+      return 'รหัสผ่านนี้เดาง่ายเกินไป กรุณาเปลี่ยน';
+    }
     return null;
   }
 

@@ -114,9 +114,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                     const SizedBox(height: 12),
                     AppTextField(
                       controller: _password,
-                      label: 'รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)',
+                      label: 'รหัสผ่าน (8 ตัวขึ้นไป มี A-Z และตัวเลข)',
                       obscure: true,
-                      validator: Validators.password,
+                      validator: Validators.newPassword,
                       enabled: !loading,
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _submit(),
