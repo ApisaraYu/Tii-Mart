@@ -12,6 +12,7 @@ import '../../features/chat/domain/entities/chat.dart';
 import '../../features/chat/presentation/pages/chat_list_page.dart';
 import '../../features/chat/presentation/pages/chat_room_page.dart';
 import '../../features/coupon/domain/entities/coupon.dart';
+import '../../features/coupon/presentation/pages/customer_coupons_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/widgets/customer_bottom_nav.dart';
 import '../../features/products/presentation/pages/product_detail_page.dart';
@@ -91,10 +92,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),
       // ---------- แชท (ลูกค้า + ร้านค้าใช้ห้องเดียวกัน) ----------
+      GoRoute(path: '/coupons', builder: (_, __) => const CustomerCouponsPage()),
       GoRoute(
         path: '/chats',
         builder: (_, __) => const ChatListPage(
-          bottomNavigationBar: CustomerBottomNav(index: 2),
+          bottomNavigationBar: CustomerBottomNav(index: 3),
         ),
       ),
       GoRoute(

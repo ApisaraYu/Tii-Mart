@@ -25,6 +25,14 @@ final sellerCouponsProvider = StreamProvider<List<Coupon>>((ref) {
   return WatchSellerCoupons(ref.watch(couponRepositoryProvider))(uid);
 });
 
+/// โค้ดที่ลูกค้าเก็บ/ใช้ได้ตอนนี้ (เปิดอยู่ + ไม่หมดอายุ + ยังเหลือ) — ต้องล็อกอิน
+final availableCouponsProvider = StreamProvider<List<Coupon>>((ref) {
+  final uid = ref.watch(currentUserProvider.select((u) => u?.uid));
+  if (uid == null) return Stream<List<Coupon>>.value(const []);
+  return WatchAvailableCoupons(ref.watch(couponRepositoryProvider))()
+      .map((list) => list.where((c) => c.isUsable).toList());
+});
+
 /// ตัวสั่งงาน: สร้าง/แก้ไข/เปิด-ปิด/ลบ (คืน true เมื่อสำเร็จ)
 class CouponManagementController extends AsyncNotifier<void> {
   @override

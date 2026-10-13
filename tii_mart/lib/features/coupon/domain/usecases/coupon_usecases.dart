@@ -9,6 +9,13 @@ class WatchSellerCoupons {
       _repo.watchCouponsByOwner(ownerId);
 }
 
+class WatchAvailableCoupons {
+  const WatchAvailableCoupons(this._repo);
+  final CouponRepository _repo;
+
+  Stream<List<Coupon>> call() => _repo.watchActiveCoupons();
+}
+
 class SaveCoupon {
   const SaveCoupon(this._repo);
   final CouponRepository _repo;

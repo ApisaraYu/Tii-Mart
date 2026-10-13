@@ -12,6 +12,9 @@ class CouponRepositoryImpl implements CouponRepository {
       _remote.watchByOwner(ownerId);
 
   @override
+  Stream<List<Coupon>> watchActiveCoupons() => _remote.watchActive();
+
+  @override
   Future<void> saveCoupon(Coupon coupon, {required bool isNew}) =>
       _remote.save(coupon, isNew: isNew);
 

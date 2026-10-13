@@ -37,6 +37,29 @@ class CouponRemoteDataSource {
         );
   }
 
+  /// โค้ดที่เปิดใช้งานทั้งหมด (ไม่ใช้ orderBy เพื่อเลี่ยง composite index)
+  Stream<List<Coupon>> watchActive() {
+    return _coupons
+        .where('isActive', isEqualTo: true)
+        .limit(200)
+        .snapshots()
+        .map((snap) {
+          final list = snap.docs.map(_fromDoc).toList();
+          final now = DateTime.now();
+          list.sort(
+            (a, b) => (b.createdAt ?? now).compareTo(a.createdAt ?? now),
+          );
+          return list;
+        })
+        .transform(
+          StreamTransformer<List<Coupon>, List<Coupon>>.fromHandlers(
+            handleError: (error, stackTrace, sink) {
+              sink.addError(toFailure(error), stackTrace);
+            },
+          ),
+        );
+  }
+
   Future<void> save(Coupon c, {required bool isNew}) {
     return guardFirebase(() async {
       final code = c.code.trim().toUpperCase();

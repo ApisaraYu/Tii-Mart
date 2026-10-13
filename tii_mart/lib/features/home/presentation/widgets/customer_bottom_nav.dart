@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/state/auth_providers.dart';
 import '../../../chat/presentation/widgets/chat_nav_icon.dart';
 
-/// แถบเมนูล่างฝั่งลูกค้า (ตาม wireframe: bottom navbar) — หน้าแรก / รถเข็น / แชท / โปรไฟล์
+/// แถบเมนูล่างฝั่งลูกค้า (ตาม wireframe: bottom navbar) — หน้าแรก / รถเข็น / โค้ด / แชท / โปรไฟล์
 /// ผู้เยี่ยมชมที่ยังไม่ล็อกอิน: รถเข็น/โปรไฟล์ จะพาไปหน้าเข้าสู่ระบบ
 class CustomerBottomNav extends ConsumerWidget {
   const CustomerBottomNav({super.key, this.index = 0});
@@ -33,8 +33,10 @@ class CustomerBottomNav extends ConsumerWidget {
                 const SnackBar(content: Text('ระบบรถเข็นจะเพิ่มในขั้นถัดไป')),
               );
           case 2:
-            context.push(loggedIn ? '/chats' : '/login');
+            context.push(loggedIn ? '/coupons' : '/login');
           case 3:
+            context.push(loggedIn ? '/chats' : '/login');
+          case 4:
             context.push(loggedIn ? '/profile' : '/login');
         }
       },
@@ -48,6 +50,11 @@ class CustomerBottomNav extends ConsumerWidget {
           icon: Icon(Icons.shopping_cart_outlined),
           selectedIcon: Icon(Icons.shopping_cart),
           label: 'รถเข็น',
+        ),
+        const NavigationDestination(
+          icon: Icon(Icons.local_offer_outlined),
+          selectedIcon: Icon(Icons.local_offer),
+          label: 'โค้ด',
         ),
         const NavigationDestination(
           icon: ChatNavIcon(),
