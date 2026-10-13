@@ -6,6 +6,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/format.dart';
 import '../../../../core/widgets/app_logo.dart';
 import '../../../auth/presentation/state/auth_providers.dart';
+import '../../../chat/domain/entities/chat.dart';
 import '../../../home/presentation/widgets/customer_bottom_nav.dart';
 import '../../domain/entities/product.dart';
 import '../state/product_providers.dart';
@@ -156,6 +157,30 @@ class _DetailViewState extends ConsumerState<_DetailView> {
   /// ผู้เยี่ยมชม: พาไปเข้าสู่ระบบ แล้วกลับมาที่หน้าสินค้านี้
   void _goLogin() {
     context.push('/login?from=${Uri.encodeComponent('/product/${p.id}')}');
+  }
+
+  /// เปิดห้องแชทกับเจ้าของสินค้า (ห้องเดิมถ้าเคยคุยแล้ว)
+  void _openChat() {
+    final me = ref.read(currentUserProvider);
+    if (me == null) {
+      _goLogin();
+      return;
+    }
+    if (me.uid == p.ownerId) {
+      _snack('นี่คือสินค้าของคุณเอง');
+      return;
+    }
+    final id = ChatThread.idFor(me.uid, p.ownerId);
+    context.push(
+      '/chat/$id',
+      extra: ChatThread(
+        id: id,
+        customerId: me.uid,
+        sellerId: p.ownerId,
+        productId: p.id,
+        productName: p.name,
+      ),
+    );
   }
 
   void _addToCart() {
@@ -381,6 +406,19 @@ class _DetailViewState extends ConsumerState<_DetailView> {
             ],
           ),
           const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _openChat,
+            icon: const Icon(Icons.chat_bubble_outline),
+            label: Text(loggedIn ? 'แชทกับร้านค้า' : 'เข้าสู่ระบบเพื่อแชทกับร้านค้า'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Card(
             color: Colors.white,
             margin: EdgeInsets.zero,

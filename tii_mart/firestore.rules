@@ -225,9 +225,15 @@ service cloud.firestore {
         // getAfter: ส่งข้อความแรก (สร้างห้อง + ข้อความใน batch เดียวกัน) ได้
         allow create: if signedIn()
                       && request.resource.data.senderId == request.auth.uid
+                      && request.resource.data.type in ['text', 'image', 'video']
                       && request.resource.data.text is string
-                      && request.resource.data.text.size() > 0
                       && request.resource.data.text.size() <= 1000
+                      // ข้อความต้องไม่ว่าง / รูป-วิดีโอต้องมีลิงก์ Cloudinary ของโปรเจกต์นี้เท่านั้น
+                      && ((request.resource.data.type == 'text'
+                           && request.resource.data.text.size() > 0)
+                          || (request.resource.data.type in ['image', 'video']
+                              && request.resource.data.mediaUrl is string
+                              && request.resource.data.mediaUrl.matches('https://res\\.cloudinary\\.com/dc7uvelzr/.*')))
                       && request.auth.uid in getAfter(/databases/$(database)/documents/chats/$(chatId)).data.participants;
         allow update, delete: if false;
       }
