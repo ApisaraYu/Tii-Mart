@@ -6,6 +6,8 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/format.dart';
 import '../../../../core/widgets/app_logo.dart';
 import '../../../auth/presentation/state/auth_providers.dart';
+import '../../../cart/domain/entities/cart_item.dart';
+import '../../../cart/presentation/state/cart_providers.dart';
 import '../../../chat/domain/entities/chat.dart';
 import '../../../home/presentation/widgets/customer_bottom_nav.dart';
 import '../../domain/entities/product.dart';
@@ -183,12 +185,53 @@ class _DetailViewState extends ConsumerState<_DetailView> {
     );
   }
 
-  void _addToCart() {
+  Future<void> _addToCart() async {
     if (_stock <= 0) {
       _snack('สินค้านี้หมดแล้ว');
       return;
     }
-    _snack('ระบบรถเข็นจะเพิ่มในขั้นถัดไป (เลือก $_qty ชิ้น)');
+    final me = ref.read(currentUserProvider);
+    if (me == null) {
+      _goLogin();
+      return;
+    }
+    if (me.uid == p.ownerId) {
+      _snack('ไม่สามารถสั่งซื้อสินค้าของร้านตัวเองได้');
+      return;
+    }
+    final v = _variant;
+    final variantId = (v != null && v.id.isNotEmpty) ? v.id : 'default';
+    try {
+      await ref.read(cartDataSourceProvider).add(
+            CartItem(
+              id: CartItem.idFor(me.uid, variantId),
+              uid: me.uid,
+              productId: p.id,
+              variantId: variantId,
+              sellerId: p.ownerId,
+              name: p.name,
+              variantLabel: v?.label ?? '',
+              price: _price,
+              qty: _qty,
+              maxQty: _stock,
+              imageUrl: p.images.isEmpty ? '' : p.images.first,
+            ),
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: const Text('เพิ่มลงรถเข็นแล้ว'),
+            action: SnackBarAction(
+              label: 'ดูรถเข็น',
+              onPressed: () => context.push('/cart'),
+            ),
+          ),
+        );
+    } catch (e) {
+      _snack(errorMessage(e));
+    }
   }
 
   Widget _arrow(IconData icon, VoidCallback onPressed) {

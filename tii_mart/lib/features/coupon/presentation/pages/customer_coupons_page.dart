@@ -48,9 +48,7 @@ class _CouponCard extends StatelessWidget {
 
   final Coupon coupon;
 
-  String get _discountText => coupon.type == DiscountType.percent
-      ? 'ลด ${coupon.value}%'
-      : 'ลด ฿${formatBaht(coupon.value)}';
+  String get _discountText => coupon.discountLabel;
 
   @override
   Widget build(BuildContext context) {

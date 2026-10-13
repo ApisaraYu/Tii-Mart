@@ -11,9 +11,7 @@ import '../../../../coupon/presentation/state/coupon_providers.dart';
 class CouponListPage extends ConsumerWidget {
   const CouponListPage({super.key});
 
-  static String discountLabel(Coupon c) => c.type == DiscountType.percent
-      ? 'ลด ${c.value}%'
-      : 'ลด ฿${formatBaht(c.value)}';
+  static String discountLabel(Coupon c) => c.discountLabel.replaceAll('\n', ' ');
 
   Future<void> _confirmDelete(
     BuildContext context,

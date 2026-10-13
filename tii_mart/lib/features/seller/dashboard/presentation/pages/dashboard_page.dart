@@ -29,6 +29,11 @@ class DashboardPage extends ConsumerWidget {
         title: const Text('แดชบอร์ดร้านค้า'),
         actions: [
           IconButton(
+            tooltip: 'ตั้งค่าร้าน / พร้อมเพย์',
+            icon: const Icon(Icons.storefront_outlined),
+            onPressed: () => context.push('/seller/shop'),
+          ),
+          IconButton(
             tooltip: 'สลับไปโหมดลูกค้า',
             icon: const Icon(Icons.swap_horiz),
             onPressed: () => context.go('/'),

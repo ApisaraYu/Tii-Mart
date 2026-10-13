@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../auth/presentation/state/auth_providers.dart';
+import '../../../cart/presentation/widgets/cart_nav_icon.dart';
 import '../../../chat/presentation/widgets/chat_nav_icon.dart';
 
 /// แถบเมนูล่างฝั่งลูกค้า (ตาม wireframe: bottom navbar) — หน้าแรก / รถเข็น / โค้ด / แชท / โปรไฟล์
@@ -19,19 +20,12 @@ class CustomerBottomNav extends ConsumerWidget {
     return NavigationBar(
       selectedIndex: index,
       onDestinationSelected: (i) {
+        if (i == index) return; // กดแท็บเดิมซ้ำ ไม่ต้องเปิดหน้าซ้อน
         switch (i) {
           case 0:
             context.go('/');
           case 1:
-            if (!loggedIn) {
-              context.push('/login');
-              return;
-            }
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                const SnackBar(content: Text('ระบบรถเข็นจะเพิ่มในขั้นถัดไป')),
-              );
+            context.push(loggedIn ? '/cart' : '/login');
           case 2:
             context.push(loggedIn ? '/coupons' : '/login');
           case 3:
@@ -47,8 +41,8 @@ class CustomerBottomNav extends ConsumerWidget {
           label: 'หน้าแรก',
         ),
         const NavigationDestination(
-          icon: Icon(Icons.shopping_cart_outlined),
-          selectedIcon: Icon(Icons.shopping_cart),
+          icon: CartNavIcon(),
+          selectedIcon: CartNavIcon(selected: true),
           label: 'รถเข็น',
         ),
         const NavigationDestination(

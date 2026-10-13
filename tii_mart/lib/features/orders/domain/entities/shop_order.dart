@@ -47,6 +47,7 @@ enum OrderStatus {
 class OrderItem {
   const OrderItem({
     required this.productId,
+    this.variantId = '',
     required this.name,
     this.variantLabel = '',
     required this.price,
@@ -55,6 +56,7 @@ class OrderItem {
   });
 
   final String productId;
+  final String variantId;
   final String name;
   final String variantLabel;
   final int price; // ราคาต่อชิ้น (บาท) ณ ตอนสั่งซื้อ
@@ -72,6 +74,15 @@ class ShopOrder {
     required this.total,
     required this.status,
     this.createdAt,
+    this.subtotal = 0,
+    this.discount = 0,
+    this.shippingFee = 0,
+    this.shippingDiscount = 0,
+    this.shippingLabel = '',
+    this.couponId,
+    this.recipientName = '',
+    this.recipientPhone = '',
+    this.addressText = '',
   });
 
   final String id;
@@ -82,4 +93,13 @@ class ShopOrder {
   final int total;
   final OrderStatus status;
   final DateTime? createdAt;
+  final int subtotal; // ราคาสินค้ารวมก่อนหักส่วนลด
+  final int discount;
+  final int shippingFee; // ค่าส่งที่ลูกค้าจ่ายจริง (หลังหักส่วนลดค่าส่งแล้ว)
+  final int shippingDiscount; // ส่วนลดค่าส่งจากโค้ดส่งฟรี
+  final String shippingLabel; // เช่น "เร็ว" / "ปกติ"
+  final String? couponId;
+  final String recipientName; // จากสำเนาที่อยู่ในออเดอร์
+  final String recipientPhone;
+  final String addressText;
 }

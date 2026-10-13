@@ -147,6 +147,14 @@ class _OrderCard extends StatelessWidget {
         OrderStatus.cancelled => Colors.red.shade700,
       };
 
+  Widget _line(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 1),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(label), Text(value)],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -178,7 +186,13 @@ class _OrderCard extends StatelessWidget {
             if (order.createdAt != null)
               Text(formatDateTime(order.createdAt!), style: textTheme.bodySmall),
             if (order.customerName.isNotEmpty)
-              Text('ลูกค้า: ${order.customerName}', style: textTheme.bodySmall),
+              Text(
+                'ผู้รับ: ${order.customerName}'
+                '${order.recipientPhone.isEmpty ? '' : ' • ${order.recipientPhone}'}',
+                style: textTheme.bodySmall,
+              ),
+            if (order.addressText.isNotEmpty)
+              Text('ที่อยู่: ${order.addressText}', style: textTheme.bodySmall),
             const Divider(height: 20),
             for (final it in order.items)
               Padding(
@@ -199,6 +213,18 @@ class _OrderCard extends StatelessWidget {
                 ),
               ),
             const Divider(height: 20),
+            if (order.subtotal > 0) ...[
+              _line('ค่าสินค้า', '฿${formatBaht(order.subtotal)}'),
+              if (order.discount > 0)
+                _line('ส่วนลด', '-฿${formatBaht(order.discount)}'),
+              _line(
+                'ค่าส่ง${order.shippingLabel.isEmpty ? '' : ' (${order.shippingLabel})'}',
+                '฿${formatBaht(order.shippingFee + order.shippingDiscount)}',
+              ),
+              if (order.shippingDiscount > 0)
+                _line('ส่วนลดค่าส่ง', '-฿${formatBaht(order.shippingDiscount)}'),
+              const SizedBox(height: 4),
+            ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

@@ -98,7 +98,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       title: Text(user.email),
                       subtitle: Text('สถานะ: ${user.role.label}'),
                     ),
-                    const SizedBox(height: 8),
+                    // เมนูย่อยของโปรไฟล์: ออเดอร์ของฉัน / ที่อยู่
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.receipt_long_outlined),
+                            title: const Text('ออเดอร์ของฉัน'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => context.push('/orders'),
+                          ),
+                          const Divider(height: 1),
+                          ListTile(
+                            leading: const Icon(Icons.location_on_outlined),
+                            title: const Text('ที่อยู่จัดส่ง'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => context.push('/addresses'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     AppTextField(
                       controller: _firstName,
                       label: 'ชื่อจริง',

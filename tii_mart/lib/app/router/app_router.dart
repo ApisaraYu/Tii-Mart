@@ -8,6 +8,13 @@ import '../../features/auth/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/state/auth_providers.dart';
+import '../../features/address/domain/address.dart';
+import '../../features/address/presentation/pages/address_form_page.dart';
+import '../../features/address/presentation/pages/addresses_page.dart';
+import '../../features/cart/presentation/pages/cart_page.dart';
+import '../../features/cart/presentation/pages/checkout_page.dart';
+import '../../features/cart/presentation/pages/payment_page.dart';
+import '../../features/cart/presentation/pages/select_coupon_page.dart';
 import '../../features/chat/domain/entities/chat.dart';
 import '../../features/chat/presentation/pages/chat_list_page.dart';
 import '../../features/chat/presentation/pages/chat_room_page.dart';
@@ -15,6 +22,7 @@ import '../../features/coupon/domain/entities/coupon.dart';
 import '../../features/coupon/presentation/pages/customer_coupons_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/widgets/customer_bottom_nav.dart';
+import '../../features/orders/presentation/pages/my_orders_page.dart';
 import '../../features/products/presentation/pages/product_detail_page.dart';
 import '../../features/products/presentation/pages/product_specs_page.dart';
 import '../../features/seller/coupon_management/presentation/pages/coupon_form_page.dart';
@@ -24,6 +32,7 @@ import '../../features/seller/order_management/presentation/pages/seller_orders_
 import '../../features/seller/product_management/presentation/pages/product_form_page.dart';
 import '../../features/seller/product_management/presentation/pages/product_list_page.dart';
 import '../../features/seller/shell/presentation/pages/seller_shell.dart';
+import '../../features/shop/presentation/pages/shop_settings_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -91,6 +100,43 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),
+      GoRoute(path: '/orders', builder: (_, __) => const MyOrdersPage()),
+      // ---------- รถเข็น / ชำระเงิน (ลูกค้า) ----------
+      GoRoute(path: '/cart', builder: (_, __) => const CartPage()),
+      GoRoute(path: '/cart/coupons', builder: (_, __) => const SelectCouponPage()),
+      GoRoute(path: '/checkout', builder: (_, __) => const CheckoutPage()),
+      GoRoute(
+        path: '/addresses',
+        builder: (_, __) => const AddressesPage(),
+      ),
+      GoRoute(
+        path: '/addresses/pick',
+        builder: (_, __) => const AddressesPage(pick: true),
+      ),
+      GoRoute(path: '/addresses/new', builder: (_, __) => const AddressFormPage()),
+      GoRoute(
+        path: '/addresses/edit',
+        builder: (_, state) => AddressFormPage(
+          address: state.extra is Address ? state.extra as Address : null,
+        ),
+      ),
+      GoRoute(
+        path: '/payment/:id',
+        builder: (_, state) => PaymentPage(orderId: state.pathParameters['id']!),
+        routes: [
+          GoRoute(
+            path: 'done',
+            builder: (_, state) =>
+                PaymentDonePage(orderId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      // ตั้งค่าร้าน (เจ้าของร้าน) เปิดเต็มจอทับ shell
+      GoRoute(
+        path: '/seller/shop',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ShopSettingsPage(),
+      ),
       // ---------- แชท (ลูกค้า + ร้านค้าใช้ห้องเดียวกัน) ----------
       GoRoute(path: '/coupons', builder: (_, __) => const CustomerCouponsPage()),
       GoRoute(

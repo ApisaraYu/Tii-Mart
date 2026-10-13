@@ -1,9 +1,13 @@
 enum DiscountType {
-  percent,
-  fixed;
+  percent, // ลดเป็น % ของค่าสินค้า
+  fixed, // ลดเป็นบาท
+  freeShipping; // ส่งฟรี: value = ลดค่าส่งสูงสุดกี่บาท (0 = ฟรีเต็มจำนวน)
 
-  static DiscountType fromString(String? v) =>
-      v == 'fixed' ? DiscountType.fixed : DiscountType.percent;
+  static DiscountType fromString(String? v) => switch (v) {
+        'fixed' => DiscountType.fixed,
+        'freeShipping' => DiscountType.freeShipping,
+        _ => DiscountType.percent,
+      };
 }
 
 /// โค้ดส่วนลดของร้าน
@@ -35,6 +39,16 @@ class Coupon {
   final bool isActive;
   final DateTime? expiresAt;
   final DateTime? createdAt;
+
+  bool get isFreeShipping => type == DiscountType.freeShipping;
+
+  /// ข้อความส่วนลดสั้นๆ ใช้โชว์ในการ์ด
+  String get discountLabel => switch (type) {
+        DiscountType.percent => 'ลด $value%',
+        DiscountType.fixed => 'ลด ฿$value',
+        DiscountType.freeShipping =>
+          value > 0 ? 'ส่งฟรี\n(ไม่เกิน ฿$value)' : 'ส่งฟรี',
+      };
 
   /// จำนวนโค้ดที่เหลือ
   int get remaining => (quantity - used).clamp(0, quantity);

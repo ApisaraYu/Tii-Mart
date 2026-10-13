@@ -172,6 +172,10 @@ class _CouponFormPageState extends ConsumerState<CouponFormPage> {
                         value: DiscountType.fixed,
                         label: Text('ลดเป็นบาท'),
                       ),
+                      ButtonSegment(
+                        value: DiscountType.freeShipping,
+                        label: Text('ส่งฟรี'),
+                      ),
                     ],
                     selected: {_type},
                     onSelectionChanged: enabled
@@ -181,16 +185,19 @@ class _CouponFormPageState extends ConsumerState<CouponFormPage> {
                   gap,
                   AppTextField(
                     controller: _value,
-                    label: _type == DiscountType.percent
-                        ? 'ส่วนลด (1-100 %)'
-                        : 'ส่วนลด (บาท)',
+                    label: switch (_type) {
+                      DiscountType.percent => 'ส่วนลด (1-100 %)',
+                      DiscountType.fixed => 'ส่วนลด (บาท)',
+                      DiscountType.freeShipping =>
+                        'ลดค่าส่งสูงสุด (บาท) — 0 = ส่งฟรีเต็มจำนวน',
+                    },
                     enabled: enabled,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (v) => _intField(
                       v,
                       name: 'ส่วนลด',
-                      min: 1,
+                      min: _type == DiscountType.freeShipping ? 0 : 1,
                       max: _type == DiscountType.percent ? 100 : null,
                     ),
                   ),
