@@ -6,7 +6,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // โปรไฟล์ผู้ใช้: อ่าน/แก้ได้เฉพาะของตัวเอง
+    function isSeller() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'seller';
+    }
+
+    // ---------------------------------------------------------------
+    // users: โปรไฟล์ผู้ใช้ อ่าน/แก้ได้เฉพาะของตัวเอง
+    // ---------------------------------------------------------------
     match /users/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
 
@@ -23,12 +30,54 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    function isSeller() {
-      return signedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'seller';
+    // ---------------------------------------------------------------
+    // addresses: ที่อยู่จัดส่ง เห็น/จัดการได้เฉพาะเจ้าของ (uid)
+    // ---------------------------------------------------------------
+    match /addresses/{addressId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if signedIn()
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == resource.data.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // สินค้า: ใครก็อ่านได้ / สร้างได้เฉพาะเจ้าของร้าน / แก้-ลบได้เฉพาะเจ้าของสินค้านั้น
+    // ---------------------------------------------------------------
+    // carts: ตะกร้า เห็น/จัดการได้เฉพาะเจ้าของ (uid)
+    // ---------------------------------------------------------------
+    match /carts/{cartId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn()
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.qty is int
+                    && request.resource.data.qty > 0;
+      allow update: if signedIn()
+                    && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == resource.data.uid
+                    && request.resource.data.qty is int
+                    && request.resource.data.qty > 0;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ---------------------------------------------------------------
+    // shops: ร้านค้า ใครก็อ่านได้ / สร้างได้เฉพาะ seller / แก้ได้เฉพาะเจ้าของร้าน
+    // ---------------------------------------------------------------
+    match /shops/{shopId} {
+      allow read: if true;
+      // เอกสารร้านใช้ id เดียวกับ uid ของเจ้าของ (สอดคล้องกับ orders.sellerId == uid)
+      allow create: if isSeller()
+                    && shopId == request.auth.uid
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow update: if signedIn()
+                    && resource.data.ownerId == request.auth.uid
+                    && request.resource.data.ownerId == resource.data.ownerId;
+      // ไม่ให้ลบร้านเอง เพราะสินค้าและออเดอร์ยังอ้างอิงอยู่
+      allow delete: if false;
+    }
+
+    // ---------------------------------------------------------------
+    // products: ใครก็อ่านได้ / สร้างได้เฉพาะเจ้าของร้าน / แก้-ลบได้เฉพาะเจ้าของสินค้านั้น
+    // ---------------------------------------------------------------
     match /products/{productId} {
       allow read: if true;
       allow create: if isSeller()
@@ -50,7 +99,9 @@ service cloud.firestore {
       }
     }
 
-    // โค้ดส่วนลด: ผู้ใช้ที่ล็อกอินอ่านได้ (ลูกค้าใช้ตอนชำระเงิน) / สร้าง-แก้-ลบได้เฉพาะเจ้าของร้าน
+    // ---------------------------------------------------------------
+    // coupons: ผู้ใช้ที่ล็อกอินอ่านได้ / สร้าง-แก้-ลบได้เฉพาะเจ้าของร้าน
+    // ---------------------------------------------------------------
     match /coupons/{couponId} {
       allow read: if signedIn();
       allow create: if isSeller()
@@ -62,22 +113,125 @@ service cloud.firestore {
                     && resource.data.ownerId == request.auth.uid;
     }
 
-    // คำสั่งซื้อ: เห็นได้เฉพาะร้านและลูกค้าของออเดอร์นั้น
+    // ---------------------------------------------------------------
+    // orders: เห็นได้เฉพาะร้านและลูกค้าของออเดอร์นั้น
+    // ---------------------------------------------------------------
     match /orders/{orderId} {
       allow read: if signedIn()
                   && (resource.data.sellerId == request.auth.uid
                       || resource.data.customerId == request.auth.uid);
-      // ลูกค้าสร้างออเดอร์ของตัวเอง (ภายหลังควรตรวจราคา/ยอดรวมเพิ่มเติม)
+
+      // ลูกค้าสร้างออเดอร์ของตัวเอง
+      // - สถานะเริ่มต้นต้องเป็น 'pendingPayment' (ตรงกับ OrderStatus ในแอพ)
+      // - ยอดรวมต้องตรงกับ subtotal - discount + shippingFee
       allow create: if signedIn()
-                    && request.resource.data.customerId == request.auth.uid;
-      // ร้านค้าแก้ได้เฉพาะสถานะ
+                    && request.resource.data.customerId == request.auth.uid
+                    && request.resource.data.status == 'pendingPayment'
+                    && request.resource.data.total ==
+                         request.resource.data.subtotal
+                         - request.resource.data.discount
+                         + request.resource.data.shippingFee;
+
+      // ร้านค้าแก้ได้เฉพาะสถานะ เลขพัสดุ ขนส่ง และเหตุผลที่ยกเลิก
       allow update: if signedIn()
                     && resource.data.sellerId == request.auth.uid
                     && request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['status', 'updatedAt']);
+                         .hasOnly(['status', 'updatedAt', 'trackingNumber', 'carrier', 'cancelReason']);
+
+      // ลูกค้ายกเลิกออเดอร์ของตัวเองได้ ตราบใดที่ยังเป็น 'pendingPayment'
+      allow update: if signedIn()
+                    && resource.data.customerId == request.auth.uid
+                    && resource.data.status == 'pendingPayment'
+                    && request.resource.data.status == 'cancelled'
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'updatedAt', 'cancelReason']);
+
       allow delete: if false;
     }
 
-    // collection อื่นๆ (carts ...) ยังไม่เปิดสิทธิ์ — เพิ่มทีหลังเมื่อทำฟีเจอร์นั้น
+    // ---------------------------------------------------------------
+    // payments: การชำระเงินของออเดอร์ เห็นได้เฉพาะลูกค้าและร้านของออเดอร์นั้น
+    // ---------------------------------------------------------------
+    function orderOf(orderId) {
+      return get(/databases/$(database)/documents/orders/$(orderId)).data;
+    }
+
+    match /payments/{paymentId} {
+      allow read: if signedIn()
+                  && (orderOf(resource.data.orderId).customerId == request.auth.uid
+                      || orderOf(resource.data.orderId).sellerId == request.auth.uid);
+
+      // ลูกค้าสร้างรายการชำระเงินของออเดอร์ตัวเอง และยอดต้องเท่ากับยอดรวมของออเดอร์
+      // getAfter = สร้างออเดอร์+payment ใน batch เดียวกันได้
+      allow create: if signedIn()
+                    && getAfter(/databases/$(database)/documents/orders/$(request.resource.data.orderId))
+                         .data.customerId == request.auth.uid
+                    && getAfter(/databases/$(database)/documents/orders/$(request.resource.data.orderId))
+                         .data.total == request.resource.data.amount;
+
+      // ร้านค้ายืนยันการชำระเงิน (เปลี่ยนได้เฉพาะ status กับ paidAt)
+      allow update: if signedIn()
+                    && orderOf(resource.data.orderId).sellerId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'paidAt']);
+
+      // ลูกค้าแนบ/เปลี่ยนสลิปได้ (เปลี่ยนได้เฉพาะ slipUrl)
+      allow update: if signedIn()
+                    && orderOf(resource.data.orderId).customerId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['slipUrl']);
+
+      allow delete: if false;
+    }
+
+    // ---------------------------------------------------------------
+    // stockMovements: ประวัติการเคลื่อนไหวสต๊อก (log) อ่านได้เฉพาะเจ้าของร้าน
+    // เพิ่มได้อย่างเดียว ห้ามแก้/ลบ
+    // การตัดสต๊อกจากออเดอร์ควรทำฝั่งเซิร์ฟเวอร์ (Cloud Functions)
+    // ---------------------------------------------------------------
+    match /stockMovements/{movementId} {
+      allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSeller()
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.resource.data.delta is int;
+      allow update, delete: if false;
+    }
+
+    // ---------------------------------------------------------------
+    // chats: แชทลูกค้า–ร้านค้า ห้อง id = customerId_sellerId เห็นได้เฉพาะ 2 คนในห้อง
+    // ---------------------------------------------------------------
+    match /chats/{chatId} {
+      // resource == null ให้ get() ห้องที่ยังไม่มีได้ (ไม่งั้นแอพเปิดห้องใหม่ไม่ได้)
+      allow read: if signedIn()
+                  && (resource == null || request.auth.uid in resource.data.participants);
+      // ลูกค้าเป็นฝ่ายเริ่มแชทเสมอ และคุยกับ "ร้านค้า" เท่านั้น
+      allow create: if signedIn()
+                    && request.resource.data.customerId == request.auth.uid
+                    && request.resource.data.sellerId != request.auth.uid
+                    && chatId == request.auth.uid + '_' + request.resource.data.sellerId
+                    && request.resource.data.participants == [request.auth.uid, request.resource.data.sellerId]
+                    && get(/databases/$(database)/documents/users/$(request.resource.data.sellerId)).data.role == 'seller';
+      // อัพเดตข้อความล่าสุด/ตัวนับที่ยังไม่อ่าน: ต้องเป็นคนในห้อง และห้ามเปลี่ยนตัวตนของห้อง
+      allow update: if signedIn()
+                    && request.auth.uid in resource.data.participants
+                    && request.resource.data.customerId == resource.data.customerId
+                    && request.resource.data.sellerId == resource.data.sellerId
+                    && request.resource.data.participants == resource.data.participants;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if signedIn()
+                    && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        // getAfter: ส่งข้อความแรก (สร้างห้อง + ข้อความใน batch เดียวกัน) ได้
+        allow create: if signedIn()
+                      && request.resource.data.senderId == request.auth.uid
+                      && request.resource.data.text is string
+                      && request.resource.data.text.size() > 0
+                      && request.resource.data.text.size() <= 1000
+                      && request.auth.uid in getAfter(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update, delete: if false;
+      }
+    }
+
   }
 }
