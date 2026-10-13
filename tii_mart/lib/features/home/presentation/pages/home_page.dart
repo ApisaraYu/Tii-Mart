@@ -219,7 +219,9 @@ class _Banner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Container(
-        height: 140,
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 140),
+        alignment: Alignment.centerLeft,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
@@ -230,7 +232,7 @@ class _Banner extends StatelessWidget {
           ),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
