@@ -211,21 +211,6 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
       ),
       body: Column(
         children: [
-          if (thread.productName != null && thread.productId != null)
-            Material(
-              color: Colors.white,
-              child: ListTile(
-                dense: true,
-                leading: const Icon(Icons.shopping_bag_outlined),
-                title: Text(
-                  'สอบถามสินค้า: ${thread.productName}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push('/product/${thread.productId}'),
-              ),
-            ),
           Expanded(
             child: messages.when(
               loading: () => const Center(child: CircularProgressIndicator()),

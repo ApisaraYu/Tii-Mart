@@ -140,6 +140,17 @@ class ChatRemoteDataSource implements ChatRepository {
           .update({'unread.$uid': 0}).timeout(_timeout);
     });
   }
+  @override
+  Future<void> syncName({
+    required ChatThread thread,
+    required String uid,
+    required String name,
+  }) {
+    return guardFirebase(() async {
+      final field = uid == thread.customerId ? 'customerName' : 'sellerName';
+      await _chats.doc(thread.id).update({field: name}).timeout(_timeout);
+    });
+  }
 
   ChatThread _threadFrom(String id, Map<String, dynamic> m) {
     final rawUnread = (m['unread'] as Map?) ?? const {};

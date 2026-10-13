@@ -18,6 +18,12 @@ abstract class ChatRepository {
     MessageType type = MessageType.text,
     String? mediaUrl,
   });
+    /// อัพเดตชื่อที่แสดงของฉันในห้อง (ซิงก์เมื่อเป็นข้อมูลเก่า)
+  Future<void> syncName({
+    required ChatThread thread,
+    required String uid,
+    required String name,
+  });
 
   /// ตั้งจำนวนที่ยังไม่อ่านของ uid เป็น 0
   Future<void> markRead({required String chatId, required String uid});

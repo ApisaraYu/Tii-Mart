@@ -23,6 +23,7 @@ class ChatNotificationHost extends ConsumerStatefulWidget {
 
 class _ChatNotificationHostState extends ConsumerState<ChatNotificationHost> {
   final Map<String, DateTime?> _seen = {};
+  final Set<String> _nameSynced = {};
   bool _primed = false;
   ChatThread? _banner;
   Timer? _timer;
@@ -37,9 +38,23 @@ class _ChatNotificationHostState extends ConsumerState<ChatNotificationHost> {
     final me = ref.read(currentUserProvider);
     if (me == null) {
       _seen.clear();
+      _nameSynced.clear();
       _primed = false;
       return;
     }
+        // ชื่อในห้องเป็นสำเนา: ถ้าไม่ตรงกับ username ปัจจุบัน ให้แก้ให้ตรง
+    if (me.username.isNotEmpty) {
+      for (final t in chats) {
+        final stored = me.uid == t.customerId ? t.customerName : t.sellerName;
+        if (stored != me.username && _nameSynced.add(t.id)) {
+          ref
+              .read(chatRepositoryProvider)
+              .syncName(thread: t, uid: me.uid, name: me.username)
+              .catchError((_) {});
+        }
+      }
+    }
+
     ChatThread? fresh;
     for (final t in chats) {
       final changed = !_seen.containsKey(t.id) ||
@@ -81,6 +96,7 @@ class _ChatNotificationHostState extends ConsumerState<ChatNotificationHost> {
     ref.listen(currentUserProvider.select((u) => u?.uid), (prev, next) {
       if (prev != next) {
         _seen.clear();
+        _nameSynced.clear();
         _primed = false;
         _hide();
       }

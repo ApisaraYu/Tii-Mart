@@ -90,16 +90,20 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
               )
             : !_ready
                 ? const CircularProgressIndicator(color: Colors.white)
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                 : Column(
                     children: [
-                      AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
-                        child: GestureDetector(
-                          onTap: () => _controller.value.isPlaying
-                              ? _controller.pause()
-                              : _controller.play(),
-                          child: VideoPlayer(_controller),
+                      // Expanded: วิดีโอแนวตั้งสูงมาก ต้องย่อให้พอดีพื้นที่ที่เหลือ
+                      Expanded(
+                        child: Center(
+                          child: AspectRatio(
+                            aspectRatio: _controller.value.aspectRatio,
+                            child: GestureDetector(
+                              onTap: () => _controller.value.isPlaying
+                                  ? _controller.pause()
+                                  : _controller.play(),
+                              child: VideoPlayer(_controller),
+                            ),
+                          ),
                         ),
                       ),
                       VideoProgressIndicator(
@@ -107,17 +111,20 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
                         allowScrubbing: true,
                         padding: const EdgeInsets.all(16),
                       ),
-                      IconButton(
-                        iconSize: 48,
-                        color: Colors.white,
-                        icon: Icon(
-                          _controller.value.isPlaying
-                              ? Icons.pause_circle
-                              : Icons.play_circle,
+                      SafeArea(
+                        top: false,
+                        child: IconButton(
+                          iconSize: 48,
+                          color: Colors.white,
+                          icon: Icon(
+                            _controller.value.isPlaying
+                                ? Icons.pause_circle
+                                : Icons.play_circle,
+                          ),
+                          onPressed: () => _controller.value.isPlaying
+                              ? _controller.pause()
+                              : _controller.play(),
                         ),
-                        onPressed: () => _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play(),
                       ),
                     ],
                   ),
