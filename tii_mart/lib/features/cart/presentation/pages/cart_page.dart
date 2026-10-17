@@ -166,7 +166,8 @@ class _CartRow extends ConsumerWidget {
     final primary = Theme.of(context).colorScheme.primary;
     final textTheme = Theme.of(context).textTheme;
     final checked = ref.watch(cartSelectionProvider.select((s) => s.contains(item.id)));
-    
+
+    // กดเพิ่มซ้ำจนเกินสต๊อก → ปรับกลับเป็นจำนวนสูงสุดที่มี
     if (item.qty > item.maxQty && item.maxQty > 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) _setQty(context, ref, item.maxQty);
@@ -303,7 +304,7 @@ class _SummaryBar extends ConsumerWidget {
     final totals = ref.watch(cartTotalsProvider);
     final textTheme = Theme.of(context).textTheme;
     final hasSelection = selected.isNotEmpty;
-    final couponApplied = coupon != null && totals.discount > 0;
+    final problem = totals.couponProblemText;
 
     return Container(
       decoration: const BoxDecoration(
@@ -320,9 +321,19 @@ class _SummaryBar extends ConsumerWidget {
             enabled: hasSelection,
             leading: const Icon(Icons.local_offer_outlined),
             title: Text(
-              couponApplied ? 'ใช้โค้ด ${coupon.code}' : 'เลือกคูปองส่วนลด',
+              coupon == null
+                  ? 'เลือกคูปองส่วนลด'
+                  : problem == null
+                      ? 'ใช้โค้ด ${coupon.code}'
+                      : 'โค้ด ${coupon.code} ใช้ไม่ได้',
             ),
-            subtitle: couponApplied ? Text('ลดไป ฿${formatBaht(totals.discount)}') : null,
+            subtitle: coupon == null
+                ? null
+                : problem != null
+                    ? Text(problem, style: TextStyle(color: Colors.red.shade700))
+                    : coupon.isFreeShipping
+                        ? const Text('ส่งฟรี — หักค่าส่งในหน้าชำระเงิน')
+                        : Text('ลดไป ฿${formatBaht(totals.discount)}'),
             trailing: const Icon(Icons.chevron_right),
             onTap: hasSelection ? () => context.push('/cart/coupons') : null,
           ),
