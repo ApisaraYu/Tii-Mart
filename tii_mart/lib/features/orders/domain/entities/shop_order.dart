@@ -29,12 +29,14 @@ enum OrderStatus {
 
   /// ร้านค้ากดเปลี่ยนไปสถานะถัดไปได้ (null = ไม่มีขั้นถัดไป)
   OrderStatus? get next => switch (this) {
+        OrderStatus.pendingPayment => OrderStatus.paid,
         OrderStatus.paid => OrderStatus.shipped,
         OrderStatus.shipped => OrderStatus.completed,
         _ => null,
       };
 
   String? get nextActionLabel => switch (this) {
+        OrderStatus.pendingPayment => 'ยืนยันรับชำระเงิน',
         OrderStatus.paid => 'ยืนยันจัดส่งแล้ว',
         OrderStatus.shipped => 'ลูกค้าได้รับแล้ว',
         _ => null,

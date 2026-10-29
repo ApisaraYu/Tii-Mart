@@ -146,6 +146,14 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['status', 'updatedAt', 'cancelReason']);
 
+      // ลูกค้ายืนยันว่าได้รับสินค้าแล้ว: shipped -> completed เท่านั้น
+      allow update: if signedIn()
+                    && resource.data.customerId == request.auth.uid
+                    && resource.data.status == 'shipped'
+                    && request.resource.data.status == 'completed'
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'updatedAt']);
+
       allow delete: if false;
     }
 

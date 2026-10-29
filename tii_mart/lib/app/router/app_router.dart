@@ -32,6 +32,8 @@ import '../../features/seller/order_management/presentation/pages/seller_orders_
 import '../../features/seller/product_management/presentation/pages/product_form_page.dart';
 import '../../features/seller/product_management/presentation/pages/product_list_page.dart';
 import '../../features/seller/shell/presentation/pages/seller_shell.dart';
+import '../../features/compare/presentation/pages/compare_page.dart';
+import '../../features/shop/presentation/pages/shop_profile_page.dart';
 import '../../features/shop/presentation/pages/shop_settings_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -56,7 +58,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       final loc = state.matchedLocation;
       final isAuthPage = loc == '/login' || loc == '/signup';
       // หน้าที่ผู้เยี่ยมชมที่ยังไม่ล็อกอินเปิดดูได้
-      final isPublic = loc == '/' || loc.startsWith('/product/');
+      final isPublic = loc == '/' || loc.startsWith('/product/') ||
+          loc.startsWith('/shop/') ||
+          loc == '/compare';
 
       // ยังไม่รู้สถานะ (กำลังโหลดครั้งแรก)
       if (!auth.hasValue && !auth.hasError) {
@@ -76,7 +80,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         final from = state.uri.queryParameters['from'];
         final valid = from != null &&
             !user.isSeller &&
-            (from.startsWith('/product/') || from == '/');
+            (from.startsWith('/product/') ||
+                from.startsWith('/shop/') ||
+                from == '/compare' ||
+                from == '/');
         return valid ? from : home;
       }
       if (loc == '/splash') return home;
@@ -88,6 +95,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
       GoRoute(path: '/signup', builder: (_, __) => const SignUpPage()),
       GoRoute(path: '/', builder: (_, __) => const HomePage()),
+      GoRoute(
+        path: '/shop/:id',
+        builder: (_, state) =>
+            ShopProfilePage(shopId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/compare', builder: (_, __) => const ComparePage()),
       GoRoute(
         path: '/product/:id',
         builder: (_, state) =>

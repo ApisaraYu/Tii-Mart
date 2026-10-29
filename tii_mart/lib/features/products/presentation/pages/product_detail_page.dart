@@ -10,6 +10,9 @@ import '../../../cart/domain/entities/cart_item.dart';
 import '../../../cart/presentation/state/cart_providers.dart';
 import '../../../chat/domain/entities/chat.dart';
 import '../../../home/presentation/widgets/customer_bottom_nav.dart';
+import '../../../compare/presentation/state/compare_providers.dart';
+import '../../../shop/presentation/pages/shop_profile_page.dart';
+import '../../../shop/presentation/state/shop_providers.dart';
 import '../../domain/entities/product.dart';
 import '../state/product_providers.dart';
 
@@ -448,11 +451,41 @@ class _DetailViewState extends ConsumerState<_DetailView> {
               _qtyStepper(),
             ],
           ),
+          const SizedBox(height: 12),
+          Card(
+            color: Colors.white,
+            margin: EdgeInsets.zero,
+            child: ListTile(
+              leading: const CircleAvatar(child: Icon(Icons.storefront_outlined)),
+              title: Text(
+                shopDisplayName(ref.watch(shopProvider(p.ownerId)).value?.name),
+              ),
+              subtitle: const Text('ร้านที่ลงขายสินค้านี้'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/shop/${p.ownerId}'),
+            ),
+          ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: _openChat,
             icon: const Icon(Icons.chat_bubble_outline),
             label: Text(loggedIn ? 'แชทกับร้านค้า' : 'เข้าสู่ระบบเพื่อแชทกับร้านค้า'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () {
+              ref.read(compareSelectionProvider.notifier).add(p.id);
+              context.push('/compare');
+            },
+            icon: const Icon(Icons.compare_arrows),
+            label: const Text('เปรียบเทียบสินค้า'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 48),
               backgroundColor: Colors.white,

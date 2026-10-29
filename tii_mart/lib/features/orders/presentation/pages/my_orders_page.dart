@@ -129,6 +129,33 @@ class _OrderCard extends ConsumerWidget {
     }
   }
 
+  Future<void> _received(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('ยืนยันว่าได้รับสินค้าแล้ว?'),
+        content: const Text('กรุณาตรวจสอบสินค้าก่อนกดยืนยัน เมื่อยืนยันแล้วออเดอร์จะเสร็จสมบูรณ์'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('ยังไม่ได้รับ')),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('ได้รับแล้ว')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(orderRemoteDataSourceProvider).confirmReceived(order.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('ยืนยันการรับสินค้าแล้ว ขอบคุณที่ใช้บริการ')));
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(errorMessage(e))));
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
@@ -200,6 +227,17 @@ class _OrderCard extends ConsumerWidget {
                 Text('฿${formatBaht(order.total)}', style: textTheme.titleMedium),
               ],
             ),
+            if (order.status == OrderStatus.shipped) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _received(context, ref),
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  label: const Text('ฉันได้รับสินค้าแล้ว'),
+                ),
+              ),
+            ],
             if (pending) ...[
               const SizedBox(height: 12),
               Row(

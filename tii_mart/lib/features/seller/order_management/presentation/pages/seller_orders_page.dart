@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../../core/errors/failure.dart';
 import '../../../../../core/utils/format.dart';
 import '../../../../orders/domain/entities/shop_order.dart';
 import '../../../../orders/presentation/state/order_providers.dart';
+import '../../../../chat/presentation/pages/media_viewer_page.dart';
 
 /// ออเดอร์ของร้าน: กรองตามสถานะ + เปลี่ยนสถานะ (จัดส่ง / สำเร็จ / ยกเลิก)
 class SellerOrdersPage extends ConsumerStatefulWidget {
@@ -18,6 +18,29 @@ class _SellerOrdersPageState extends ConsumerState<SellerOrdersPage> {
   OrderStatus? _filter; // null = ทั้งหมด
 
   Future<void> _change(ShopOrder order, OrderStatus status) async {
+    if (status == OrderStatus.paid) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('ยืนยันรับชำระเงิน'),
+          content: const Text(
+            'ตรวจสอบแล้วว่ายอดเงินเข้าบัญชีครบถ้วน?\n'
+            'เมื่อยืนยัน ระบบจะตัดสต๊อกสินค้าและนับการใช้โค้ดส่วนลดให้ทันที',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('ยังไม่ยืนยัน'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('ยืนยันรับชำระเงิน'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
     if (status == OrderStatus.cancelled) {
       final ok = await showDialog<bool>(
         context: context,
@@ -128,7 +151,7 @@ class _SellerOrdersPageState extends ConsumerState<SellerOrdersPage> {
   }
 }
 
-class _OrderCard extends StatelessWidget {
+class _OrderCard extends ConsumerWidget {
   const _OrderCard({
     required this.order,
     required this.busy,
@@ -156,9 +179,12 @@ class _OrderCard extends StatelessWidget {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final next = order.status.next;
+    final isPending = order.status == OrderStatus.pendingPayment;
+    // สลิปที่ลูกค้าแนบ (ออเดอร์เก่าที่ไม่มีรายการชำระเงินจะอ่านไม่ได้ → ถือว่าไม่มีสลิป)
+    final slip = isPending ? ref.watch(paymentProvider(order.id)).value?.slipUrl : null;
     final shortId = order.id.length > 6 ? order.id.substring(0, 6) : order.id;
 
     return Card(
@@ -232,6 +258,22 @@ class _OrderCard extends StatelessWidget {
                 Text('฿${formatBaht(order.total)}', style: textTheme.titleMedium),
               ],
             ),
+            if (isPending) ...[
+              const SizedBox(height: 8),
+              if (slip != null)
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => ImageViewerPage(url: slip)),
+                  ),
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  label: const Text('ดูสลิปการโอน'),
+                )
+              else
+                Text(
+                  'ลูกค้ายังไม่แนบสลิป — ตรวจยอดเข้าบัญชีพร้อมเพย์ของร้านก่อนกดยืนยัน',
+                  style: textTheme.bodySmall,
+                ),
+            ],
             if (next != null || order.status.canCancel) ...[
               const SizedBox(height: 12),
               Row(

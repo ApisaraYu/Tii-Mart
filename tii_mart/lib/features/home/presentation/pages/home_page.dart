@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -25,6 +26,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   final _searchController = TextEditingController();
   String _query = '';
   String? _category; // null = ทั้งหมด
+  _Sort _sort = _Sort.newest;
+  int? _minPrice;
+  int? _maxPrice;
 
   @override
   void dispose() {
@@ -35,13 +39,125 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// กรองฝั่งแอพ: ชื่อ/ยี่ห้อ/หมวดหมู่ มีคำค้นอยู่ (ใช้ได้กับภาษาไทย ไม่ต้องตัดคำ)
   List<Product> _filter(List<Product> all) {
     final q = _query.trim().toLowerCase();
-    return all.where((p) {
+    final list = all.where((p) {
       if (_category != null && p.category != _category) return false;
+      if (_minPrice != null && p.minPrice < _minPrice!) return false;
+      if (_maxPrice != null && p.minPrice > _maxPrice!) return false;
       if (q.isEmpty) return true;
       return p.name.toLowerCase().contains(q) ||
           p.brand.toLowerCase().contains(q) ||
           p.category.toLowerCase().contains(q);
     }).toList();
+    // newest = คงลำดับเดิมจากฐานข้อมูล (ใหม่สุดก่อน)
+    if (_sort == _Sort.priceAsc) {
+      list.sort((a, b) => a.minPrice.compareTo(b.minPrice));
+    } else if (_sort == _Sort.priceDesc) {
+      list.sort((a, b) => b.minPrice.compareTo(a.minPrice));
+    }
+    return list;
+  }
+
+  bool get _hasFilter =>
+      _sort != _Sort.newest || _minPrice != null || _maxPrice != null;
+
+  Future<void> _openFilter() async {
+    final minC = TextEditingController(text: _minPrice?.toString() ?? '');
+    final maxC = TextEditingController(text: _maxPrice?.toString() ?? '');
+    var sort = _sort;
+    final applied = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => Padding(
+          padding: EdgeInsets.fromLTRB(
+            16, 16, 16, 16 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('เรียงลำดับ', style: Theme.of(ctx).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    for (final s in _Sort.values)
+                      ChoiceChip(
+                        label: Text(s.label),
+                        selected: sort == s,
+                        onSelected: (_) => setSheet(() => sort = s),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text('ช่วงราคา (บาท)', style: Theme.of(ctx).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: minC,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(hintText: 'ต่ำสุด'),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('-'),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: maxC,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(hintText: 'สูงสุด'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          sort = _Sort.newest;
+                          minC.clear();
+                          maxC.clear();
+                          Navigator.pop(ctx, true);
+                        },
+                        child: const Text('ล้างตัวกรอง'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('ใช้ตัวกรอง'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (applied != true) return;
+    var lo = int.tryParse(minC.text);
+    var hi = int.tryParse(maxC.text);
+    if (lo != null && hi != null && lo > hi) {
+      final t = lo;
+      lo = hi;
+      hi = t;
+    }
+    setState(() {
+      _sort = sort;
+      _minPrice = lo;
+      _maxPrice = hi;
+    });
   }
 
   Future<void> _pickCategory() async {
@@ -152,6 +268,20 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ActionChip(
+                  avatar: const Icon(Icons.sort, size: 18),
+                  label: Text(_hasFilter ? 'เรียง/กรองราคา • ใช้อยู่' : 'เรียง/กรองราคา'),
+                  backgroundColor: Colors.white,
+                  onPressed: _openFilter,
+                ),
+              ),
+            ),
+          ),
           ...products.when<List<Widget>>(
             loading: () => [
               const SliverFillRemaining(
@@ -219,6 +349,7 @@ class _Banner extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Container(
+        // ไม่ล็อกความสูง: ข้อความขึ้นบรรทัดเพิ่มได้ (จอเล็ก/ผู้ใช้ขยายตัวอักษร) แต่ไม่ต่ำกว่า 140
         width: double.infinity,
         constraints: const BoxConstraints(minHeight: 140),
         alignment: Alignment.centerLeft,
@@ -288,4 +419,13 @@ class _Message extends StatelessWidget {
       ),
     );
   }
+}
+
+enum _Sort {
+  newest('ใหม่ล่าสุด'),
+  priceAsc('ราคาต่ำ → สูง'),
+  priceDesc('ราคาสูง → ต่ำ');
+
+  const _Sort(this.label);
+  final String label;
 }
