@@ -54,7 +54,7 @@ class VariantEditor extends StatelessWidget {
         for (var i = 0; i < drafts.length; i++)
           Card(
             key: ObjectKey(drafts[i]),
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             margin: const EdgeInsets.only(bottom: 12),
             child: Padding(
               padding: const EdgeInsets.all(12),

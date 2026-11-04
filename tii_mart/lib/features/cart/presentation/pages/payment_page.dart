@@ -13,6 +13,7 @@ import '../../../chat/presentation/pages/media_viewer_page.dart';
 import '../../../auth/presentation/state/auth_providers.dart';
 import '../../../orders/presentation/state/order_providers.dart';
 import '../../../shop/presentation/state/shop_providers.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// ชำระเงิน (ตาม wireframe: payment page) — QR พร้อมเพย์ของร้าน + ยอดเงิน + แนบสลิป (ไม่บังคับ)
 class PaymentPage extends ConsumerStatefulWidget {
@@ -101,7 +102,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -120,7 +121,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                         height: 200,
                         alignment: Alignment.center,
                         padding: const EdgeInsets.all(16),
-                        color: const Color(0xFFEFEFEF),
+                        color: context.placeholder(const Color(0xFFEFEFEF)),
                         child: const Text(
                           'ร้านนี้ยังไม่ได้ตั้งค่าช่องทางรับเงินพร้อมเพย์\nกรุณาติดต่อร้านค้าผ่านแชท',
                           textAlign: TextAlign.center,
@@ -179,12 +180,12 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                   ),
                 ),
               if (slip != null)
-                const Padding(
-                  padding: EdgeInsets.only(top: 4),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     'แตะที่สลิปเพื่อดูเต็มจอ',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                    style: TextStyle(fontSize: 12, color: context.ink54),
                   ),
                 ),
               TextButton.icon(

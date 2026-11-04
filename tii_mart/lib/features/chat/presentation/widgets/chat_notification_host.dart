@@ -7,6 +7,7 @@ import '../../../../app/router/app_router.dart';
 import '../../../auth/presentation/state/auth_providers.dart';
 import '../../domain/entities/chat.dart';
 import '../state/chat_providers.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// แบนเนอร์แจ้งเตือน "ข้อความใหม่" เด้งจากด้านบนของจอ (ขณะเปิดแอพอยู่)
 /// ครอบแอพทั้งหมดผ่าน MaterialApp.router(builder: ...)
@@ -120,7 +121,7 @@ class _ChatNotificationHostState extends ConsumerState<ChatNotificationHost> {
                 child: Material(
                   elevation: 8,
                   borderRadius: BorderRadius.circular(16),
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
@@ -149,17 +150,17 @@ class _ChatNotificationHostState extends ConsumerState<ChatNotificationHost> {
                                   banner.titleFor(me.uid),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 Text(
                                   banner.lastMessage,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.black54,
+                                  style: TextStyle(
+                                    color: context.ink54,
                                     fontSize: 13,
                                   ),
                                 ),

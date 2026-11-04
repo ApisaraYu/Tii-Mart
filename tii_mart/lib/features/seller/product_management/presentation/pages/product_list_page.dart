@@ -7,6 +7,7 @@ import '../../../../../core/utils/format.dart';
 import '../../../../products/domain/entities/product.dart';
 import '../../../../products/presentation/state/product_providers.dart';
 import '../state/product_management_controller.dart';
+import '../../../../../app/theme/app_theme.dart';
 
 /// รายการสินค้าของร้าน (Read) + ปุ่มเพิ่ม (Create) / แก้ไข (Update) / ลบ (Delete)
 class ProductListPage extends ConsumerWidget {
@@ -127,7 +128,7 @@ class _ProductCard extends StatelessWidget {
     final image = product.images.isEmpty ? null : product.images.first;
 
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       margin: EdgeInsets.zero,
       child: ListTile(
         onTap: onEdit,
@@ -138,8 +139,8 @@ class _ProductCard extends StatelessWidget {
             width: 60,
             height: 60,
             child: image == null
-                ? const ColoredBox(
-                    color: Color(0xFFE6E6E6),
+                ? ColoredBox(
+ color: context.placeholder(const Color(0xFFE6E6E6)),
                     child: Icon(Icons.image_outlined),
                   )
                 : Image.network(

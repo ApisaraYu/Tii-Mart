@@ -38,7 +38,7 @@ class AddressesPage extends ConsumerWidget {
               final a = list[i];
               return Card(
                 margin: EdgeInsets.zero,
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 child: ListTile(
                   onTap: pick
                       ? () {

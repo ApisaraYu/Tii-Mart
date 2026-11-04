@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../app/theme/app_theme.dart';
 
 /// ส่วนเลือกรูปสินค้าหลายรูป: รูปเดิม (URL) + รูปใหม่ที่เพิ่งเลือก (ยังไม่อัพโหลด)
 class ImagePickerSection extends StatelessWidget {
@@ -61,15 +60,15 @@ class ImagePickerSection extends StatelessWidget {
                   width: 88,
                   height: 88,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary),
+                    border: Border.all(color: Theme.of(context).colorScheme.primary),
                   ),
-                  child: const Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.add_photo_alternate_outlined,
-                          color: AppColors.primary),
+                          color: Theme.of(context).colorScheme.primary),
                       SizedBox(height: 4),
                       Text('เพิ่มรูป', style: TextStyle(fontSize: 13)),
                     ],

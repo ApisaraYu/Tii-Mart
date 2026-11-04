@@ -6,6 +6,7 @@ import '../../../../../core/errors/failure.dart';
 import '../../../../../core/utils/format.dart';
 import '../../../../coupon/domain/entities/coupon.dart';
 import '../../../../coupon/presentation/state/coupon_providers.dart';
+import '../../../../../app/theme/app_theme.dart';
 
 /// โค้ดส่วนลดของร้าน: ดูจำนวนที่เหลือ เปิด/ปิด แก้ไข ลบ
 class CouponListPage extends ConsumerWidget {
@@ -91,7 +92,7 @@ class CouponListPage extends ConsumerWidget {
                       ? 'โค้ดหมดแล้ว'
                       : null;
               return Card(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 margin: EdgeInsets.zero,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(12),
@@ -126,7 +127,7 @@ class CouponListPage extends ConsumerWidget {
                                 Text(
                                   note,
                                   style: TextStyle(
-                                    color: Colors.red[700],
+                                    color: context.tone(Colors.red.shade700),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

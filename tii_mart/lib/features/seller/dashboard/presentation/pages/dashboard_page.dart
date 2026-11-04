@@ -9,6 +9,7 @@ import '../../../../orders/domain/entities/shop_order.dart';
 import '../../../../orders/presentation/state/order_providers.dart';
 import '../../../../products/domain/entities/product.dart';
 import '../../../../products/presentation/state/product_providers.dart';
+import '../../../../../app/theme/app_theme.dart';
 
 /// สินค้าที่เหลือไม่เกินค่านี้ถือว่า "ใกล้หมด"
 const _lowStockThreshold = 5;
@@ -140,7 +141,7 @@ class DashboardPage extends ConsumerWidget {
                   if (low.isNotEmpty || out.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Card(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       margin: EdgeInsets.zero,
                       child: Column(
                         children: [
@@ -203,19 +204,19 @@ class _StatTile extends StatelessWidget {
     final primary = Theme.of(context).colorScheme.primary;
     return Expanded(
       child: Card(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: highlight ? Colors.orange[800] : primary),
+              Icon(icon, color: highlight ? context.tone(Colors.orange.shade800) : primary),
               const SizedBox(height: 8),
               Text(
                 value,
                 style: textTheme.titleLarge?.copyWith(
-                  color: highlight ? Colors.orange[800] : primary,
+                  color: highlight ? context.tone(Colors.orange.shade800) : primary,
                 ),
               ),
               Text(label, style: textTheme.bodySmall),
@@ -241,7 +242,7 @@ class _StockRow extends StatelessWidget {
       trailing: Text(
         out ? 'หมด' : 'เหลือ ${product.totalStock}',
         style: TextStyle(
-          color: out ? Colors.red[700] : Colors.orange[800],
+          color: out ? context.tone(Colors.red.shade700) : context.tone(Colors.orange.shade800),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -268,6 +269,6 @@ class _ErrorText extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.all(8),
-        child: Text(text, style: TextStyle(color: Colors.red[700])),
+        child: Text(text, style: TextStyle(color: context.tone(Colors.red.shade700))),
       );
 }

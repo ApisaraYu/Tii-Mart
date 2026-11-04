@@ -56,7 +56,7 @@ class _SelectCouponPageState extends ConsumerState<SelectCouponPage> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       border: picked ? Border.all(color: primary, width: 1.5) : null,
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/product.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// หน้ารายละเอียดสเปก ตาม wireframe (description page):
 /// คำอธิบาย + ตารางสเปก (ซ้าย: หัวข้อ / ขวา: รายละเอียด) + ปุ่มย้อนกลับ
@@ -58,7 +59,7 @@ class _SpecsCard extends StatelessWidget {
     ];
 
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       margin: EdgeInsets.zero,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -83,10 +84,10 @@ class _SpecsCard extends StatelessWidget {
                   0: FixedColumnWidth(120),
                   1: FlexColumnWidth(),
                 },
-                border: const TableBorder(
-                  horizontalInside: BorderSide(color: Color(0xFFE0E0E0)),
-                  top: BorderSide(color: Color(0xFFE0E0E0)),
-                  bottom: BorderSide(color: Color(0xFFE0E0E0)),
+                border: TableBorder(
+                  horizontalInside: BorderSide(color: context.placeholder(const Color(0xFFE0E0E0))),
+                  top: BorderSide(color: context.placeholder(const Color(0xFFE0E0E0))),
+                  bottom: BorderSide(color: context.placeholder(const Color(0xFFE0E0E0))),
                 ),
                 children: [
                   for (final r in rows)

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/utils/format.dart';
 import '../../../products/domain/entities/product.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// แถวสินค้าในหน้า Home ตาม wireframe: รูปซ้าย / ชื่อ + คำอธิบาย + ราคา ขวา
 /// (เป็นแถวความสูงยืดตามเนื้อหา จึงไม่เกิด bottom overflow เหมือนแบบกริด)
@@ -21,7 +22,7 @@ class ProductCard extends StatelessWidget {
             .join(' • ');
 
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -36,16 +37,16 @@ class ProductCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   if (product.images.isEmpty)
-                    const ColoredBox(
-                      color: Color(0xFFEAEAEA),
+                    ColoredBox(
+ color: context.placeholder(const Color(0xFFEAEAEA)),
                       child: Icon(Icons.image_outlined, size: 36),
                     )
                   else
                     Image.network(
                       product.images.first,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const ColoredBox(
-                        color: Color(0xFFEAEAEA),
+                      errorBuilder: (_, __, ___) => ColoredBox(
+ color: context.placeholder(const Color(0xFFEAEAEA)),
                         child: Icon(Icons.broken_image_outlined, size: 36),
                       ),
                     ),

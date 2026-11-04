@@ -226,7 +226,7 @@ class _CouponFormPageState extends ConsumerState<CouponFormPage> {
                   ),
                   gap,
                   Card(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     margin: EdgeInsets.zero,
                     child: ListTile(
                       leading: const Icon(Icons.event_outlined),

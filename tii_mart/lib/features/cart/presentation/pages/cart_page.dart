@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_logo.dart';
 import '../../../home/presentation/widgets/customer_bottom_nav.dart';
 import '../../domain/entities/cart_item.dart';
 import '../state/cart_providers.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// หน้ารถเข็น (ตาม wireframe: cart)
 /// รายการสินค้า (รูป/ชื่อ/ตัวเลือก/จำนวน/ติ๊กเลือก/ราคา) → แถบเลือกคูปอง → ราคาทั้งหมด → ปุ่มไปหน้าชำระเงิน
@@ -189,7 +190,7 @@ class _CartRow extends ConsumerWidget {
       onDismissed: (_) => _remove(context, ref),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           border: checked ? Border.all(color: primary, width: 1.5) : null,
         ),
@@ -202,15 +203,15 @@ class _CartRow extends ConsumerWidget {
                 width: 80,
                 height: 80,
                 child: item.imageUrl.isEmpty
-                    ? const ColoredBox(
-                        color: Color(0xFFEFEFEF),
+                    ? ColoredBox(
+ color: context.placeholder(const Color(0xFFEFEFEF)),
                         child: Icon(Icons.image_not_supported_outlined),
                       )
                     : Image.network(
                         item.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const ColoredBox(
-                          color: Color(0xFFEFEFEF),
+                        errorBuilder: (_, __, ___) => ColoredBox(
+ color: context.placeholder(const Color(0xFFEFEFEF)),
                           child: Icon(Icons.broken_image_outlined),
                         ),
                       ),
@@ -283,11 +284,11 @@ class _StepButton extends StatelessWidget {
         height: 30,
         decoration: BoxDecoration(
           border: Border.all(
-            color: onTap == null ? Colors.black12 : Colors.black38,
+            color: onTap == null ? context.ink12 : context.ink38,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 18, color: onTap == null ? Colors.black26 : null),
+        child: Icon(icon, size: 18, color: onTap == null ? context.ink26 : null),
       ),
     );
   }
@@ -307,8 +308,8 @@ class _SummaryBar extends ConsumerWidget {
     final problem = totals.couponProblemText;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
         boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 8, offset: Offset(0, -2))],
       ),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -330,7 +331,7 @@ class _SummaryBar extends ConsumerWidget {
             subtitle: coupon == null
                 ? null
                 : problem != null
-                    ? Text(problem, style: TextStyle(color: Colors.red.shade700))
+                    ? Text(problem, style: TextStyle(color: context.tone(Colors.red.shade700)))
                     : coupon.isFreeShipping
                         ? const Text('ส่งฟรี — หักค่าส่งในหน้าชำระเงิน')
                         : Text('ลดไป ฿${formatBaht(totals.discount)}'),

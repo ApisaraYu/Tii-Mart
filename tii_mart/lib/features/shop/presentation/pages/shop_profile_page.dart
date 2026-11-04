@@ -70,7 +70,7 @@ class _ShopProfilePageState extends ConsumerState<ShopProfilePage> {
             padding: const EdgeInsets.all(16),
             children: [
               Card(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 margin: EdgeInsets.zero,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -104,7 +104,7 @@ class _ShopProfilePageState extends ConsumerState<ShopProfilePage> {
                   label: const Text('แชทกับร้านค้า'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
-                    backgroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).cardColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),

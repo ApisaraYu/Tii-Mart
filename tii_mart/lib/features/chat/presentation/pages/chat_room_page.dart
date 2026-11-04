@@ -10,6 +10,7 @@ import '../../domain/entities/chat.dart';
 import '../state/chat_providers.dart';
 import '../widgets/chat_time.dart';
 import 'media_viewer_page.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// ห้องแชท: รายการข้อความ (ใหม่สุดอยู่ล่าง) + ช่องพิมพ์
 /// [initial] ใช้ตอนเปิดห้องใหม่ที่ยังไม่มีข้อมูลใน Firestore (เช่นมาจากหน้าสินค้า)
@@ -292,7 +293,7 @@ class _Bubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 3),
         padding: EdgeInsets.all(message.type == MessageType.text ? 12 : 6),
         decoration: BoxDecoration(
-          color: mine ? primary : Colors.white,
+          color: mine ? primary : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -304,7 +305,9 @@ class _Bubble extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   message.text,
-                  style: TextStyle(color: mine ? Colors.white : Colors.black87),
+                  style: TextStyle(
+                    color: mine ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               )
             else
@@ -316,7 +319,7 @@ class _Bubble extends StatelessWidget {
                   : chatTimeLabel(message.createdAt),
               style: TextStyle(
                 fontSize: 10,
-                color: mine ? Colors.white70 : Colors.black45,
+                color: mine ? Colors.white70 : context.ink45,
               ),
             ),
           ],
@@ -359,16 +362,16 @@ class _MediaContent extends StatelessWidget {
                 fit: BoxFit.cover,
                 loadingBuilder: (_, child, progress) => progress == null
                     ? child
-                    : const ColoredBox(
-                        color: Colors.black12,
+                    : ColoredBox(
+                        color: context.ink12,
                         child: Center(child: CircularProgressIndicator()),
                       ),
                 errorBuilder: (_, __, ___) => ColoredBox(
-                  color: Colors.black12,
+                  color: context.ink12,
                   child: Icon(
                     isVideo ? Icons.videocam : Icons.broken_image,
                     size: 48,
-                    color: Colors.black38,
+                    color: context.ink38,
                   ),
                 ),
               ),

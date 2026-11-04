@@ -8,6 +8,7 @@ import '../../../home/presentation/widgets/customer_bottom_nav.dart';
 import '../../../products/domain/entities/product.dart';
 import '../../../products/presentation/state/product_providers.dart';
 import '../state/compare_providers.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// เปรียบเทียบสินค้า 2 ชิ้นแบบเคียงข้างกัน (ราคา สเปก พอร์ต) แถวที่ต่างกันจะไฮไลต์
 class ComparePage extends ConsumerWidget {
@@ -142,7 +143,7 @@ class _Slot extends StatelessWidget {
     final p = product;
     final textTheme = Theme.of(context).textTheme;
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: p == null
@@ -170,15 +171,15 @@ class _Slot extends StatelessWidget {
                   child: AspectRatio(
                     aspectRatio: 1.3,
                     child: p.images.isEmpty
-                        ? const ColoredBox(
-                            color: Color(0xFFEAEAEA),
+                        ? ColoredBox(
+ color: context.placeholder(const Color(0xFFEAEAEA)),
                             child: Icon(Icons.image_outlined, size: 36),
                           )
                         : Image.network(
                             p.images.first,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const ColoredBox(
-                              color: Color(0xFFEAEAEA),
+                            errorBuilder: (_, __, ___) => ColoredBox(
+ color: context.placeholder(const Color(0xFFEAEAEA)),
                               child: Icon(Icons.broken_image_outlined),
                             ),
                           ),
@@ -235,7 +236,7 @@ class _Table extends StatelessWidget {
     ];
 
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       margin: EdgeInsets.zero,
       child: Column(
         children: [
@@ -253,12 +254,14 @@ class _Table extends StatelessWidget {
             text,
             style: textTheme.bodyMedium?.copyWith(
               fontWeight: good ? FontWeight.w700 : null,
-              color: good ? Colors.green[800] : null,
+              color: good ? context.tone(Colors.green.shade800) : null,
             ),
           ),
         );
     return Container(
-      color: diff ? const Color(0xFFFFF6D9) : null,
+      color: diff
+          ? (context.isDark ? const Color(0x33FFC107) : const Color(0xFFFFF6D9))
+          : null,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

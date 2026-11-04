@@ -70,7 +70,7 @@ class _ChatTile extends StatelessWidget {
     final mine = thread.lastSenderId == myUid;
 
     return ListTile(
-      tileColor: Colors.white,
+      tileColor: Theme.of(context).cardColor,
       onTap: () => context.push('/chat/${thread.id}', extra: thread),
       leading: CircleAvatar(
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -86,7 +86,7 @@ class _ChatTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontWeight: unread > 0 ? FontWeight.w700 : FontWeight.w400,
-          color: unread > 0 ? Colors.black87 : null,
+          color: unread > 0 ? Theme.of(context).colorScheme.onSurface : null,
         ),
       ),
       trailing: Column(

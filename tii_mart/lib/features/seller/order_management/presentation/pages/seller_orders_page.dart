@@ -5,6 +5,7 @@ import '../../../../../core/utils/format.dart';
 import '../../../../orders/domain/entities/shop_order.dart';
 import '../../../../orders/presentation/state/order_providers.dart';
 import '../../../../chat/presentation/pages/media_viewer_page.dart';
+import '../../../../../app/theme/app_theme.dart';
 
 /// ออเดอร์ของร้าน: กรองตามสถานะ + เปลี่ยนสถานะ (จัดส่ง / สำเร็จ / ยกเลิก)
 class SellerOrdersPage extends ConsumerStatefulWidget {
@@ -188,7 +189,7 @@ class _OrderCard extends ConsumerWidget {
     final shortId = order.id.length > 6 ? order.id.substring(0, 6) : order.id;
 
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -203,7 +204,7 @@ class _OrderCard extends ConsumerWidget {
                 Text(
                   order.status.label,
                   style: TextStyle(
-                    color: _statusColor(order.status),
+                    color: context.tone(_statusColor(order.status)),
                     fontWeight: FontWeight.w700,
                   ),
                 ),

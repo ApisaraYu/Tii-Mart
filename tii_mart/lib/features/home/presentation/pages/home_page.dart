@@ -12,6 +12,7 @@ import '../../../products/domain/entities/product.dart';
 import '../../../products/presentation/state/product_providers.dart';
 import '../widgets/customer_bottom_nav.dart';
 import '../widgets/product_card.dart';
+import '../../../../app/theme/theme_mode_provider.dart';
 
 /// หน้าแรกฝั่งลูกค้า ตาม wireframe (main page):
 /// โลโก้ → แบนเนอร์ → ปุ่มหมวดหมู่ + ช่องค้นหา → รายการสินค้า → bottom navbar
@@ -195,6 +196,13 @@ class _HomePageState extends ConsumerState<HomePage> {
       appBar: AppBar(
         title: const AppLogo(),
         actions: [
+          IconButton(
+            tooltip: context.isDark ? 'ธีมสว่าง' : 'ธีมมืด',
+            icon: Icon(context.isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => ref
+                .read(themeModeProvider.notifier)
+                .setDark(!context.isDark),
+          ),
           if (user == null)
             TextButton(
               onPressed: () => context.push('/login'),
@@ -224,7 +232,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       onPressed: _pickCategory,
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 52),
-                        backgroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).cardColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -256,7 +264,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 },
                               ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Theme.of(context).cardColor,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide.none,
@@ -276,7 +284,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: ActionChip(
                   avatar: const Icon(Icons.sort, size: 18),
                   label: Text(_hasFilter ? 'เรียง/กรองราคา • ใช้อยู่' : 'เรียง/กรองราคา'),
-                  backgroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).cardColor,
                   onPressed: _openFilter,
                 ),
               ),

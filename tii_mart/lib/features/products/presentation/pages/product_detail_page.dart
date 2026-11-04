@@ -15,6 +15,7 @@ import '../../../shop/presentation/pages/shop_profile_page.dart';
 import '../../../shop/presentation/state/shop_providers.dart';
 import '../../domain/entities/product.dart';
 import '../state/product_providers.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// หน้าสินค้า ตาม wireframe (product page):
 /// รูป (ปุ่ม < >) → ชื่อ/ราคา → ตัวเลือก + จำนวน → กล่องคำอธิบาย (ดูเพิ่มเติม) → ปุ่มเพิ่มลงรถเข็น
@@ -255,8 +256,8 @@ class _DetailViewState extends ConsumerState<_DetailView> {
       child: AspectRatio(
         aspectRatio: 1.3,
         child: p.images.isEmpty
-            ? const ColoredBox(
-                color: Color(0xFFEAEAEA),
+            ? ColoredBox(
+ color: context.placeholder(const Color(0xFFEAEAEA)),
                 child: Icon(Icons.image_outlined, size: 56),
               )
             : Stack(
@@ -268,8 +269,8 @@ class _DetailViewState extends ConsumerState<_DetailView> {
                     itemBuilder: (_, i) => Image.network(
                       p.images[i],
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const ColoredBox(
-                        color: Color(0xFFEAEAEA),
+                      errorBuilder: (_, __, ___) => ColoredBox(
+ color: context.placeholder(const Color(0xFFEAEAEA)),
                         child: Icon(Icons.broken_image_outlined, size: 56),
                       ),
                     ),
@@ -327,9 +328,9 @@ class _DetailViewState extends ConsumerState<_DetailView> {
   Widget _qtyStepper() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black26),
+        border: Border.all(color: context.ink26),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -417,7 +418,7 @@ class _DetailViewState extends ConsumerState<_DetailView> {
           Text(
             soldOut ? 'สินค้าหมด' : 'คงเหลือ $_stock ชิ้น',
             style: TextStyle(
-              color: soldOut ? Colors.red[700] : Colors.green[800],
+              color: context.tone(soldOut ? Colors.red.shade700 : Colors.green.shade800),
             ),
           ),
           const SizedBox(height: 16),
@@ -428,7 +429,7 @@ class _DetailViewState extends ConsumerState<_DetailView> {
                   onPressed: p.variants.isEmpty ? null : _pickVariant,
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 52),
-                    backgroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).cardColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -453,7 +454,7 @@ class _DetailViewState extends ConsumerState<_DetailView> {
           ),
           const SizedBox(height: 12),
           Card(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             margin: EdgeInsets.zero,
             child: ListTile(
               leading: const CircleAvatar(child: Icon(Icons.storefront_outlined)),
@@ -472,7 +473,7 @@ class _DetailViewState extends ConsumerState<_DetailView> {
             label: Text(loggedIn ? 'แชทกับร้านค้า' : 'เข้าสู่ระบบเพื่อแชทกับร้านค้า'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 48),
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).cardColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -488,7 +489,7 @@ class _DetailViewState extends ConsumerState<_DetailView> {
             label: const Text('เปรียบเทียบสินค้า'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 48),
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).cardColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -496,7 +497,7 @@ class _DetailViewState extends ConsumerState<_DetailView> {
           ),
           const SizedBox(height: 12),
           Card(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             margin: EdgeInsets.zero,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),

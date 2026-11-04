@@ -7,6 +7,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../state/auth_providers.dart';
+import '../../../../app/theme/theme_mode_provider.dart';
 
 /// แก้ไขโปรไฟล์ + ออกจากระบบ
 class ProfilePage extends ConsumerStatefulWidget {
@@ -115,6 +116,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             title: const Text('ที่อยู่จัดส่ง'),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () => context.push('/addresses'),
+                          ),
+                          const Divider(height: 1),
+                          SwitchListTile(
+                            secondary: const Icon(Icons.dark_mode_outlined),
+                            title: const Text('ธีมมืด'),
+                            value: ref.watch(themeModeProvider) == ThemeMode.dark,
+                            onChanged: (v) =>
+                                ref.read(themeModeProvider.notifier).setDark(v),
                           ),
                         ],
                       ),

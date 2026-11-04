@@ -10,6 +10,7 @@ import '../../../orders/domain/entities/shipping_option.dart';
 import '../../../orders/presentation/state/order_providers.dart';
 import '../../domain/entities/cart_item.dart';
 import '../state/cart_providers.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// ยืนยัน / เลือกที่จัดส่ง (ตาม wireframe: confirm page)
 /// ที่อยู่ → สินค้า → ประเภทจัดส่ง → โค้ดที่ใช้ → ช่องทางชำระเงิน → สรุปราคา → ยืนยัน
@@ -109,7 +110,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                       : address == null
                           ? Text(
                               'ยังไม่มีที่อยู่จัดส่ง — แตะเพื่อเพิ่ม',
-                              style: TextStyle(color: Colors.red.shade700),
+                              style: TextStyle(color: context.tone(Colors.red.shade700)),
                             )
                           : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +261,7 @@ class _Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -287,11 +288,13 @@ class _ItemRow extends StatelessWidget {
             width: 64,
             height: 64,
             child: item.imageUrl.isEmpty
-                ? const ColoredBox(color: Color(0xFFEFEFEF))
+                ? ColoredBox(
+ color: context.placeholder(const Color(0xFFEFEFEF)))
                 : Image.network(
                     item.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFEFEFEF)),
+                    errorBuilder: (_, __, ___) => ColoredBox(
+ color: context.placeholder(const Color(0xFFEFEFEF))),
                   ),
           ),
         ),

@@ -6,6 +6,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/format.dart';
 import '../../domain/entities/shop_order.dart';
 import '../state/order_providers.dart';
+import '../../../../app/theme/app_theme.dart';
 
 /// ออเดอร์ของฉัน (หน้าย่อยของโปรไฟล์) — เลือกกรองตามสถานะ / ไปชำระเงิน / ยกเลิก
 class MyOrdersPage extends ConsumerStatefulWidget {
@@ -163,7 +164,7 @@ class _OrderCard extends ConsumerWidget {
     final pending = order.status == OrderStatus.pendingPayment;
 
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -178,7 +179,7 @@ class _OrderCard extends ConsumerWidget {
                 Text(
                   order.status.label,
                   style: TextStyle(
-                    color: _statusColor(order.status),
+                    color: context.tone(_statusColor(order.status)),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -198,12 +199,14 @@ class _OrderCard extends ConsumerWidget {
                         width: 48,
                         height: 48,
                         child: it.imageUrl.isEmpty
-                            ? const ColoredBox(color: Color(0xFFEFEFEF))
+                            ? ColoredBox(
+ color: context.placeholder(const Color(0xFFEFEFEF)))
                             : Image.network(
                                 it.imageUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) =>
-                                    const ColoredBox(color: Color(0xFFEFEFEF)),
+                                    ColoredBox(
+ color: context.placeholder(const Color(0xFFEFEFEF))),
                               ),
                       ),
                     ),

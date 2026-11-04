@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/chat/presentation/widgets/chat_notification_host.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
+import 'theme/theme_mode_provider.dart';
 
 class TiiMartApp extends ConsumerWidget {
   const TiiMartApp({super.key});
@@ -15,6 +16,8 @@ class TiiMartApp extends ConsumerWidget {
       title: 'TiiMart',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ref.watch(themeModeProvider),
       routerConfig: router,
       // แบนเนอร์แจ้งเตือนข้อความใหม่ ครอบทุกหน้า
       builder: (context, child) =>
